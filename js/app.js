@@ -2,6 +2,7 @@
 (() => {
     const CONFIG = {
         localStorageKey: 'thugLifeEngineStatsV1',
+        cycleStartStorageKey: 'thugLifeEngineCycleStartV1',
         dayNightCycleMinutes: 20,
         atmosphereParticleCount: 0,
         starCount: 56,
@@ -26,12 +27,28 @@
     const runCoinsLabel = document.getElementById('runCoins');
     const totalCoinsLabel = document.getElementById('totalCoins');
     const recordCoinsLabel = document.getElementById('recordCoins');
+    const phaseSwitch = document.getElementById('phaseSwitch');
 
     const phase = {
         night: 0,
         dusk: 0,
         warm: 1
     };
+
+    const phasePresets = [
+        { label: 'Tag', t: 0.0 },
+        { label: 'Abend', t: 0.24 },
+        { label: 'Nacht', t: 0.5 },
+        { label: 'Morgen', t: 0.86 }
+    ];
+
+    let cycleStartMs = Number.parseFloat(localStorage.getItem(CONFIG.cycleStartStorageKey) || '');
+    if (!Number.isFinite(cycleStartMs)) {
+        const cycleMs = CONFIG.dayNightCycleMinutes * 60 * 1000;
+        cycleStartMs = Date.now() - (Date.now() % cycleMs);
+        localStorage.setItem(CONFIG.cycleStartStorageKey, String(cycleStartMs));
+    }
+
 
     const atmosphere = {
         width: 0,
@@ -151,7 +168,8 @@
 
     function updateDayNightCycle() {
         const cycleMs = CONFIG.dayNightCycleMinutes * 60 * 1000;
-        const t = (Date.now() % cycleMs) / cycleMs;
+        const elapsedMs = Date.now() - cycleStartMs;
+        const t = ((elapsedMs % cycleMs) + cycleMs) % cycleMs / cycleMs;
         const wave = (1 - Math.cos(t * Math.PI * 2)) / 2;
         const duskA = smoothstep(0.12, 0.25, t) * (1 - smoothstep(0.25, 0.38, t));
         const duskB = smoothstep(0.62, 0.75, t) * (1 - smoothstep(0.75, 0.88, t));
@@ -164,6 +182,32 @@
         root.style.setProperty('--dusk', phase.dusk.toFixed(3));
         root.style.setProperty('--warm', phase.warm.toFixed(3));
         root.style.setProperty('--star-alpha', phase.night.toFixed(3));
+
+        updatePhaseSwitchLabel(t);
+    }
+
+    function getCurrentPhaseLabel(t) {
+        if (phase.night > 0.74) return 'Nacht';
+        if (phase.dusk > 0.25 && t < 0.5) return 'Abend';
+        if (phase.dusk > 0.25) return 'Morgen';
+        return phase.night > 0.32 ? 'Übergang' : 'Tag';
+    }
+
+    function updatePhaseSwitchLabel(t) {
+        if (!phaseSwitch) return;
+        const minutes = Math.floor(CONFIG.dayNightCycleMinutes * (((Date.now() - cycleStartMs) / (CONFIG.dayNightCycleMinutes * 60 * 1000)) % 1));
+        phaseSwitch.textContent = `Zeit: ${getCurrentPhaseLabel(t)} ${minutes}m`;
+    }
+
+    function switchPhase() {
+        const cycleMs = CONFIG.dayNightCycleMinutes * 60 * 1000;
+        const currentT = (((Date.now() - cycleStartMs) % cycleMs) + cycleMs) % cycleMs / cycleMs;
+        let nextIndex = phasePresets.findIndex((preset) => Math.abs(preset.t - currentT) < 0.08);
+        nextIndex = (nextIndex + 1) % phasePresets.length;
+        const nextPreset = phasePresets[nextIndex];
+        cycleStartMs = Date.now() - nextPreset.t * cycleMs;
+        localStorage.setItem(CONFIG.cycleStartStorageKey, String(cycleStartMs));
+        updateDayNightCycle();
     }
 
     function drawAtmosphere(deltaSeconds, elapsedSeconds) {
@@ -446,6 +490,14 @@
             game.coins = [];
             updateHud();
         });
+
+        if (phaseSwitch) {
+            phaseSwitch.addEventListener('pointerdown', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                switchPhase();
+            });
+        }
     }
 
     loadStats();
