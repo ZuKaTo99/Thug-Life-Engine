@@ -62,6 +62,18 @@
         hasInteracted: false
     };
 
+    window.thugLifeRuntime = {
+        phase,
+        game,
+        elements: {
+            wallpaper: document.getElementById('wallpaper'),
+            runner,
+            gameLane,
+            miniRunner,
+            coinLayer
+        }
+    };
+
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
     }

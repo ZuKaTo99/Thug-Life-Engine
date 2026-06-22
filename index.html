@@ -6,6 +6,14 @@
     <meta name="theme-color" content="#09070a" />
     <title>Thug Life Engine</title>
     <link rel="stylesheet" href="css/style.css" />
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 <body>
     <main class="wallpaper" id="wallpaper" aria-label="Thug Life Engine Wallpaper">
@@ -37,6 +45,10 @@
                 <span>Total <strong id="totalCoins">0</strong></span>
                 <span>Rekord <strong id="recordCoins">0</strong></span>
             </div>
+
+            <button class="car-switch" id="carSwitch" type="button" aria-label="Auto wechseln">
+                Auto: Lädt...
+            </button>
 
             <div class="game-lane" id="gameLane">
                 <div class="lane-glow" aria-hidden="true"></div>
