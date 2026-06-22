@@ -399,7 +399,7 @@
         game.lastTime = now;
 
         updateDayNightCycle();
-        // Clouds are disabled for now because the current effect does not fit the wallpaper style.
+        // Clouds are disabled because the Three.js layer now handles the upper atmosphere.
         // drawCloudLayer(deltaSeconds, now / 1000);
         drawAtmosphere(deltaSeconds, now / 1000);
         updateMiniGame(deltaSeconds);

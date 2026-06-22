@@ -18,6 +18,7 @@
             draggable="false"
         />
 
+        <canvas class="three-layer" id="threeCanvas" aria-hidden="true"></canvas>
         <canvas class="cloud-canvas" id="cloudCanvas" aria-hidden="true"></canvas>
         <canvas class="atmosphere-canvas" id="atmosphereCanvas" aria-hidden="true"></canvas>
 
@@ -41,7 +42,7 @@
                 <div class="lane-glow" aria-hidden="true"></div>
                 <div class="coin-layer" id="coinLayer" aria-hidden="true"></div>
 
-                <button class="runner" id="runner" type="button" aria-label="Figur springen lassen">
+                <button class="runner" id="runner" type="button" aria-label="Auto springen lassen">
                     <span class="runner-shadow" aria-hidden="true"></span>
                     <span class="runner-tail" aria-hidden="true"></span>
                     <span class="runner-body" aria-hidden="true"></span>
@@ -55,11 +56,12 @@
                 </button>
 
                 <div class="ground-strip" aria-hidden="true"></div>
-                <div class="game-hint" id="gameHint" aria-hidden="true">Figur klicken / Leertaste</div>
+                <div class="game-hint" id="gameHint" aria-hidden="true">Auto klicken / Leertaste</div>
             </div>
         </section>
     </main>
 
+    <script type="module" src="js/three-scene.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
