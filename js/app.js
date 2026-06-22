@@ -4,8 +4,9 @@
         localStorageKey: 'thugLifeEngineStatsV1',
         cycleStartStorageKey: 'thugLifeEngineCycleStartV1',
         dayNightCycleMinutes: 20,
-        atmosphereParticleCount: 0,
-        starCount: 56,
+        atmosphereParticleCount: 44,
+        pearlCount: 30,
+        starCount: 66,
         coinSpawnMinSeconds: 1.8,
         coinSpawnMaxSeconds: 3.1,
         coinSpeed: 230,
@@ -53,6 +54,7 @@
         height: 0,
         dpr: 1,
         motes: [],
+        pearls: [],
         stars: []
     };
 
@@ -136,6 +138,27 @@
             alpha: randomRange(0.12, 0.42),
             warmth: randomRange(0.2, 1)
         }));
+
+        const pearlZones = [
+            { x0: 0.06, x1: 0.24, y0: 0.48, y1: 0.75 },
+            { x0: 0.55, x1: 0.92, y0: 0.40, y1: 0.72 },
+            { x0: 0.28, x1: 0.92, y0: 0.76, y1: 0.92 }
+        ];
+
+        atmosphere.pearls = Array.from({ length: CONFIG.pearlCount }, (_, index) => {
+            const zone = pearlZones[index % pearlZones.length];
+            return {
+                x: randomRange(zone.x0, zone.x1) * atmosphere.width,
+                y: randomRange(zone.y0, zone.y1) * atmosphere.height,
+                size: randomRange(1.4, 4.2),
+                speedX: randomRange(-3.4, 4.8),
+                speedY: randomRange(-2.2, 2.8),
+                pulse: randomRange(0, Math.PI * 2),
+                pulseSpeed: randomRange(0.55, 1.45),
+                alpha: randomRange(0.16, 0.46),
+                hue: Math.random() > 0.58 ? 'warm' : 'cool'
+            };
+        });
 
         atmosphere.stars = Array.from({ length: CONFIG.starCount }, () => ({
             x: Math.random() * atmosphere.width,
@@ -230,12 +253,58 @@
             if (mote.y > atmosphere.height + 20) mote.y = -20;
 
             const shimmer = 0.68 + Math.sin(elapsedSeconds * 0.9 + mote.x * 0.01) * 0.32;
-            const warmAlpha = mote.alpha * shimmer * clamp((phase.night - 0.35) / 0.65, 0, 1) * 0.45;
-            ctx.globalAlpha = warmAlpha;
-            ctx.fillStyle = mote.warmth > 0.5 ? 'rgba(255, 196, 105, 1)' : 'rgba(158, 196, 255, 1)';
+            const dayAlpha = mote.alpha * shimmer * (1 - phase.night) * 0.13;
+            const nightAlpha = mote.alpha * shimmer * clamp((phase.night - 0.15) / 0.85, 0, 1) * 0.22;
+            const alpha = dayAlpha + nightAlpha;
+
+            if (alpha <= 0.002) continue;
+
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = mote.warmth > 0.5 ? 'rgba(255, 203, 126, 1)' : 'rgba(169, 209, 255, 1)';
             ctx.beginPath();
             ctx.arc(mote.x, mote.y, mote.size, 0, Math.PI * 2);
             ctx.fill();
+        }
+
+        const pearlOpacity = clamp((phase.night - 0.18) / 0.82, 0, 1);
+        if (pearlOpacity > 0.01) {
+            for (const pearl of atmosphere.pearls) {
+                pearl.x += pearl.speedX * deltaSeconds;
+                pearl.y += pearl.speedY * deltaSeconds;
+
+                if (pearl.x < -30) pearl.x = atmosphere.width + 30;
+                if (pearl.x > atmosphere.width + 30) pearl.x = -30;
+                if (pearl.y < atmosphere.height * 0.34) pearl.y = atmosphere.height * 0.92;
+                if (pearl.y > atmosphere.height * 0.95) pearl.y = atmosphere.height * 0.38;
+
+                const pulse = 0.62 + Math.sin(elapsedSeconds * pearl.pulseSpeed + pearl.pulse) * 0.38;
+                const alpha = pearl.alpha * pearlOpacity * pulse;
+                const radius = pearl.size * (2.4 + pulse * 1.1);
+                const glow = ctx.createRadialGradient(pearl.x, pearl.y, 0, pearl.x, pearl.y, radius);
+
+                if (pearl.hue === 'warm') {
+                    glow.addColorStop(0, `rgba(255, 244, 213, ${alpha})`);
+                    glow.addColorStop(0.42, `rgba(255, 177, 92, ${alpha * 0.35})`);
+                } else {
+                    glow.addColorStop(0, `rgba(231, 247, 255, ${alpha})`);
+                    glow.addColorStop(0.42, `rgba(99, 188, 255, ${alpha * 0.38})`);
+                }
+
+                glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(pearl.x, pearl.y, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.globalAlpha = alpha * 0.30;
+                ctx.strokeStyle = pearl.hue === 'warm' ? 'rgba(255, 217, 150, 1)' : 'rgba(177, 223, 255, 1)';
+                ctx.lineWidth = Math.max(0.7, pearl.size * 0.28);
+                ctx.beginPath();
+                ctx.moveTo(pearl.x - radius * 0.55, pearl.y + radius * 0.35);
+                ctx.lineTo(pearl.x + radius * 0.55, pearl.y + radius * 0.26);
+                ctx.stroke();
+            }
         }
 
         ctx.globalAlpha = 1;
