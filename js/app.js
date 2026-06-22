@@ -5,11 +5,11 @@
         dayNightCycleMinutes: 20,
         atmosphereParticleCount: 84,
         starCount: 88,
-        coinSpawnMinSeconds: 0.9,
-        coinSpawnMaxSeconds: 1.7,
-        coinSpeed: 260,
+        coinSpawnMinSeconds: 1.8,
+        coinSpawnMaxSeconds: 3.1,
+        coinSpeed: 230,
         gravity: 690,
-        jumpVelocity: 310,
+        jumpVelocity: 360,
         cloudCount: 7
     };
 
@@ -292,7 +292,7 @@
         const model = {
             element: coin,
             x: gameLane.clientWidth + 30,
-            y: randomRange(34, Math.max(42, laneHeight - 58)),
+            y: randomRange(72, Math.max(88, laneHeight - 42)),
             size: 18,
             spin: randomRange(0, 360),
             collected: false

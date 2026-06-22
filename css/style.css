@@ -61,31 +61,31 @@ button {
 
 .scene-backdrop {
     z-index: 0;
-    inset: -4%;
+    inset: -3%;
     background-image: url("../assets/images/Thug_Life_original_image.jpeg");
     background-position: center center;
     background-size: cover;
     filter:
-        blur(28px)
-        brightness(calc(0.9 - (var(--night) * 0.18)))
-        saturate(calc(1.08 - (var(--night) * 0.18)));
-    transform: scale(1.12);
-    opacity: 0.74;
+        blur(18px)
+        brightness(calc(0.98 - (var(--night) * 0.12)))
+        saturate(calc(1.04 - (var(--night) * 0.08)));
+    transform: scale(1.06);
+    opacity: 0.42;
 }
 
 .scene-image {
     z-index: 1;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center center;
     pointer-events: none;
     filter:
-        brightness(calc(1.02 - (var(--night) * 0.22)))
-        contrast(calc(1.03 + (var(--night) * 0.1)))
-        saturate(calc(1.06 - (var(--night) * 0.18)))
-        hue-rotate(calc(var(--night) * -7deg))
-        drop-shadow(0 20px 38px rgba(0, 0, 0, 0.18));
+        brightness(calc(1.10 - (var(--night) * 0.14)))
+        contrast(calc(1.03 + (var(--night) * 0.08)))
+        saturate(calc(1.06 - (var(--night) * 0.12)))
+        hue-rotate(calc(var(--night) * -5deg))
+        drop-shadow(0 12px 26px rgba(0, 0, 0, 0.12));
     transition: filter 1000ms linear;
 }
 
@@ -106,22 +106,22 @@ button {
     z-index: 3;
     background:
         linear-gradient(180deg,
-            rgba(31, 23, 46, calc(0.16 + (var(--night) * 0.34))) 0%,
-            rgba(14, 9, 22, calc(0.03 + (var(--night) * 0.28))) 40%,
-            rgba(255, 143, 59, calc(0.08 + (var(--dusk) * 0.18))) 100%),
-        radial-gradient(circle at 80% 29%, rgba(255, 205, 102, calc(0.2 * var(--warm))), transparent 29%);
+            rgba(31, 23, 46, calc(0.10 + (var(--night) * 0.22))) 0%,
+            rgba(14, 9, 22, calc(0.02 + (var(--night) * 0.18))) 40%,
+            rgba(255, 143, 59, calc(0.05 + (var(--dusk) * 0.12))) 100%),
+        radial-gradient(circle at 80% 29%, rgba(255, 205, 102, calc(0.14 * var(--warm))), transparent 29%);
     mix-blend-mode: soft-light;
-    opacity: 0.92;
+    opacity: 0.72;
 }
 
 .night-wash {
     z-index: 4;
     background:
-        radial-gradient(circle at 72% 17%, rgba(120, 150, 255, 0.14), transparent 21%),
+        radial-gradient(circle at 72% 17%, rgba(120, 150, 255, 0.10), transparent 21%),
         linear-gradient(180deg,
-            rgba(8, 10, 28, calc(0.68 * var(--night))) 0%,
-            rgba(5, 7, 21, calc(0.5 * var(--night))) 54%,
-            rgba(8, 5, 14, calc(0.42 * var(--night))) 100%);
+            rgba(8, 10, 28, calc(0.48 * var(--night))) 0%,
+            rgba(5, 7, 21, calc(0.36 * var(--night))) 54%,
+            rgba(8, 5, 14, calc(0.28 * var(--night))) 100%);
     opacity: 1;
     mix-blend-mode: multiply;
 }
@@ -179,9 +179,9 @@ button {
 .cinematic-vignette {
     z-index: 30;
     background:
-        radial-gradient(ellipse at center, transparent 46%, rgba(0, 0, 0, 0.14) 74%, rgba(0, 0, 0, 0.42) 100%),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.24), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.22));
-    opacity: calc(0.56 + (var(--night) * 0.16));
+        radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, 0.08) 76%, rgba(0, 0, 0, 0.26) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.14), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.14));
+    opacity: calc(0.42 + (var(--night) * 0.10));
 }
 
 .mini-runner {
@@ -190,7 +190,7 @@ button {
     left: 0;
     right: 0;
     bottom: clamp(8px, 1.2vh, 18px);
-    height: clamp(98px, 11vh, 148px);
+    height: clamp(150px, 18vh, 220px);
     opacity: var(--mini-alpha);
     transition: opacity 250ms ease;
     pointer-events: auto;
@@ -202,38 +202,54 @@ button {
 }
 
 .mini-hud {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    z-index: 3;
-    display: flex;
-    gap: clamp(10px, 1vw, 18px);
+    position: fixed;
+    top: clamp(26px, 3.2vh, 54px);
+    right: clamp(22px, 3vw, 64px);
+    left: auto;
+    z-index: 80;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
     align-items: center;
     justify-content: center;
-    transform: translate(-50%, -2px);
-    padding: 0;
-    background: none;
-    border: 0;
-    box-shadow: none;
-    backdrop-filter: none;
-    color: rgba(255, 235, 194, 0.78);
+    transform: none;
+    min-width: 148px;
+    padding: 10px 13px;
+    border: 1px solid rgba(255, 214, 132, 0.18);
+    border-radius: 16px;
+    background:
+        linear-gradient(180deg, rgba(20, 13, 16, 0.58), rgba(8, 6, 9, 0.32));
+    box-shadow:
+        0 10px 34px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 22px rgba(255, 174, 65, 0.08);
+    backdrop-filter: blur(12px);
+    color: rgba(255, 235, 194, 0.82);
     font-size: clamp(10px, 0.72vw, 13px);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.68);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.72);
+}
+
+.mini-hud span {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
 }
 
 .mini-hud strong {
-    color: rgba(255, 203, 87, 0.98);
-    font-weight: 800;
-    text-shadow: 0 0 12px rgba(255, 183, 49, 0.42);
+    color: rgba(255, 204, 86, 1);
+    font-weight: 900;
+    text-shadow:
+        0 0 8px rgba(255, 183, 49, 0.48),
+        0 0 18px rgba(255, 83, 45, 0.18);
 }
 
 .game-lane {
     position: absolute;
     inset: 0;
-    overflow: hidden;
+    overflow: visible;
     background: none;
     border: 0;
     box-shadow: none;
@@ -312,8 +328,8 @@ button {
     left: clamp(54px, 18vw, 300px);
     bottom: 24px;
     z-index: 4;
-    width: 44px;
-    height: 48px;
+    width: 86px;
+    height: 52px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -335,93 +351,114 @@ button {
 
 .runner-shadow {
     position: absolute;
-    left: 5px;
-    right: 5px;
-    bottom: -2px;
-    height: 7px;
+    left: 8px;
+    right: 6px;
+    bottom: -1px;
+    height: 9px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.34);
-    filter: blur(3px);
-    transform: scaleX(calc(1 - (var(--jump-progress, 0) * 0.34)));
-    opacity: calc(0.38 - (var(--jump-progress, 0) * 0.18));
+    background: rgba(0, 0, 0, 0.42);
+    filter: blur(4px);
+    transform: scaleX(calc(1 - (var(--jump-progress, 0) * 0.28)));
+    opacity: calc(0.46 - (var(--jump-progress, 0) * 0.2));
 }
 
 .runner-body {
     position: absolute;
-    left: 11px;
-    bottom: 5px;
-    width: 25px;
-    height: 28px;
-    border-radius: 45% 48% 44% 48%;
+    left: 7px;
+    bottom: 9px;
+    width: 74px;
+    height: 25px;
+    border-radius: 18px 28px 12px 14px;
     background:
-        radial-gradient(circle at 37% 26%, rgba(255, 240, 215, 0.6), transparent 20%),
-        linear-gradient(145deg, #75614e 0%, #3e302b 65%, #1d1617 100%);
-    box-shadow: inset -4px -5px 6px rgba(0, 0, 0, 0.22), 0 0 13px rgba(255, 196, 113, 0.09);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 28%),
+        linear-gradient(180deg, #242a31 0 30%, #d11f32 31% 68%, #5d1018 69% 100%);
+    box-shadow:
+        inset 0 -4px 7px rgba(0, 0, 0, 0.36),
+        inset 0 2px 3px rgba(255, 255, 255, 0.14),
+        0 0 14px rgba(255, 35, 58, 0.22),
+        0 5px 18px rgba(0, 0, 0, 0.32);
+}
+
+.runner-body::before,
+.runner-body::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at center, #f5d36a 0 12%, #111 14% 42%, #050505 44% 68%, #323232 70% 100%);
+    box-shadow: 0 0 7px rgba(0, 0, 0, 0.8);
+    animation: wheel-spin 440ms linear infinite;
+}
+
+.runner-body::before {
+    left: 12px;
+}
+
+.runner-body::after {
+    right: 12px;
 }
 
 .runner-head {
     position: absolute;
-    left: 15px;
-    bottom: 27px;
-    width: 26px;
-    height: 22px;
-    border-radius: 45% 48% 42% 52%;
+    left: 28px;
+    bottom: 28px;
+    width: 38px;
+    height: 17px;
+    border-radius: 13px 17px 5px 4px;
     background:
-        radial-gradient(circle at 36% 32%, rgba(255, 243, 220, 0.62), transparent 20%),
-        linear-gradient(145deg, #8a735c 0%, #4a382f 72%, #211817 100%);
-    box-shadow: inset -3px -4px 5px rgba(0, 0, 0, 0.22);
+        linear-gradient(135deg, rgba(155, 225, 255, 0.72), rgba(20, 28, 38, 0.92));
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.28),
+        inset 0 -2px 3px rgba(0, 0, 0, 0.34);
+    transform: skewX(-9deg);
 }
 
-.runner-ear {
+.runner-head::after {
+    content: "";
     position: absolute;
-    top: -8px;
-    width: 10px;
-    height: 13px;
-    border-radius: 56% 56% 35% 35%;
-    background: linear-gradient(160deg, #77604e, #30221f);
-    transform-origin: bottom center;
-}
-
-.runner-ear-left { left: 3px; transform: rotate(-18deg); }
-.runner-ear-right { right: 3px; transform: rotate(18deg); }
-
-.runner-eye {
-    position: absolute;
-    top: 8px;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: rgba(255, 238, 199, 0.96);
-    box-shadow: 0 0 4px rgba(255, 217, 146, 0.9);
-}
-
-.runner-eye-left { left: 8px; }
-.runner-eye-right { right: 8px; }
-
-.runner-nose {
-    position: absolute;
-    left: 12px;
-    top: 13px;
-    width: 4px;
-    height: 3px;
-    border-radius: 50%;
-    background: #171011;
+    left: 4px;
+    right: 5px;
+    bottom: -4px;
+    height: 2px;
+    border-radius: 999px;
+    background: rgba(255, 64, 88, 0.78);
+    box-shadow: 0 0 8px rgba(255, 43, 70, 0.72);
 }
 
 .runner-tail {
     position: absolute;
-    left: 3px;
-    bottom: 15px;
-    width: 16px;
-    height: 10px;
-    border-radius: 60% 30% 50% 60%;
-    background: linear-gradient(135deg, #685241, #241919);
-    transform-origin: right center;
-    animation: tail-sway 540ms ease-in-out infinite alternate;
+    left: 4px;
+    bottom: 32px;
+    width: 26px;
+    height: 7px;
+    border-radius: 999px 999px 3px 3px;
+    background: linear-gradient(180deg, #25272d, #08090c);
+    box-shadow: 0 0 8px rgba(255, 42, 65, 0.2);
+    transform: rotate(-8deg);
 }
 
-.runner.jumping .runner-tail {
-    animation-duration: 280ms;
+.runner-tail::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    bottom: -8px;
+    width: 5px;
+    height: 10px;
+    border-radius: 999px;
+    background: #08090c;
+}
+
+.runner-ear,
+.runner-eye,
+.runner-nose {
+    display: none;
+}
+
+.runner.jumping .runner-body {
+    filter: brightness(1.08);
 }
 
 .game-hint {
@@ -487,5 +524,15 @@ button {
     .light-leak {
         animation-duration: 1ms !important;
         animation-iteration-count: 1 !important;
+    }
+}
+
+@keyframes wheel-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
     }
 }
