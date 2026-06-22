@@ -1,22 +1,23 @@
-(() => {
-    'use strict';
 
+(() => {
     const CONFIG = {
+        localStorageKey: 'thugLifeEngineStatsV1',
         dayNightCycleMinutes: 20,
-        atmosphereParticleCount: 92,
-        starCount: 120,
-        coinSpawnMinSeconds: 1.1,
-        coinSpawnMaxSeconds: 1.8,
-        coinSpeed: 220,
-        gravity: 2100,
-        jumpVelocity: 780,
-        localStorageKey: 'thugLifeEngineMiniRunnerStatsV1'
+        atmosphereParticleCount: 84,
+        starCount: 88,
+        coinSpawnMinSeconds: 0.9,
+        coinSpawnMaxSeconds: 1.7,
+        coinSpeed: 260,
+        gravity: 690,
+        jumpVelocity: 310,
+        cloudCount: 7
     };
 
     const root = document.documentElement;
     const canvas = document.getElementById('atmosphereCanvas');
-    const ctx = canvas.getContext('2d', { alpha: true });
-
+    const ctx = canvas.getContext('2d');
+    const cloudCanvas = document.getElementById('cloudCanvas');
+    const cloudCtx = cloudCanvas.getContext('2d');
     const miniRunner = document.getElementById('miniRunner');
     const gameLane = document.getElementById('gameLane');
     const coinLayer = document.getElementById('coinLayer');
@@ -38,6 +39,13 @@
         dpr: 1,
         motes: [],
         stars: []
+    };
+
+    const clouds = {
+        width: 0,
+        height: 0,
+        dpr: 1,
+        items: []
     };
 
     const game = {
@@ -78,7 +86,17 @@
         canvas.style.height = `${atmosphere.height}px`;
         ctx.setTransform(atmosphere.dpr, 0, 0, atmosphere.dpr, 0, 0);
 
+        clouds.dpr = atmosphere.dpr;
+        clouds.width = window.innerWidth;
+        clouds.height = Math.round(window.innerHeight * 0.32);
+        cloudCanvas.width = Math.round(clouds.width * clouds.dpr);
+        cloudCanvas.height = Math.round(clouds.height * clouds.dpr);
+        cloudCanvas.style.width = `${clouds.width}px`;
+        cloudCanvas.style.height = `${clouds.height}px`;
+        cloudCtx.setTransform(clouds.dpr, 0, 0, clouds.dpr, 0, 0);
+
         createAtmosphere();
+        createClouds();
     }
 
     function createAtmosphere() {
@@ -102,6 +120,23 @@
         }));
     }
 
+    function createClouds() {
+        clouds.items = Array.from({ length: CONFIG.cloudCount }, (_, index) => {
+            const scale = randomRange(0.7, 1.18);
+            return {
+                x: randomRange(-180, clouds.width + 120),
+                y: randomRange(18, Math.max(26, clouds.height * 0.62)),
+                width: randomRange(150, 300) * scale,
+                height: randomRange(34, 72) * scale,
+                speed: randomRange(8, 20),
+                alpha: randomRange(0.28, 0.52),
+                blur: randomRange(10, 18),
+                seed: randomRange(0, Math.PI * 2),
+                layer: index % 3
+            };
+        });
+    }
+
     function updateDayNightCycle() {
         const cycleMs = CONFIG.dayNightCycleMinutes * 60 * 1000;
         const t = (Date.now() % cycleMs) / cycleMs;
@@ -117,7 +152,6 @@
         root.style.setProperty('--dusk', phase.dusk.toFixed(3));
         root.style.setProperty('--warm', phase.warm.toFixed(3));
         root.style.setProperty('--star-alpha', phase.night.toFixed(3));
-        root.style.setProperty('--cloud-alpha', (0.5 + phase.dusk * 0.15).toFixed(3));
     }
 
     function drawAtmosphere(deltaSeconds, elapsedSeconds) {
@@ -154,6 +188,56 @@
         }
 
         ctx.globalAlpha = 1;
+    }
+
+    function drawCloudLayer(deltaSeconds, elapsedSeconds) {
+        cloudCtx.clearRect(0, 0, clouds.width, clouds.height);
+        const nightTint = phase.night * 0.32;
+
+        for (const cloud of clouds.items) {
+            cloud.x += cloud.speed * deltaSeconds;
+            if (cloud.x - cloud.width > clouds.width + 120) {
+                cloud.x = -cloud.width - 120;
+                cloud.y = randomRange(18, Math.max(26, clouds.height * 0.62));
+            }
+
+            const drift = Math.sin(elapsedSeconds * 0.15 + cloud.seed) * 3;
+            const puffAlpha = cloud.alpha * (0.84 + phase.dusk * 0.14 - phase.night * 0.05);
+            const shade = 247 - Math.round(nightTint * 46);
+            const warm = 238 - Math.round(phase.night * 28);
+            const cool = 230 - Math.round(phase.night * 8);
+
+            cloudCtx.save();
+            cloudCtx.translate(cloud.x, cloud.y + drift);
+            cloudCtx.filter = `blur(${cloud.blur}px)`;
+            cloudCtx.globalAlpha = puffAlpha;
+
+            const grad = cloudCtx.createLinearGradient(0, -cloud.height * 0.6, 0, cloud.height * 0.8);
+            grad.addColorStop(0, `rgba(${shade}, ${warm}, ${cool}, 0.92)`);
+            grad.addColorStop(1, `rgba(${shade - 10}, ${warm - 12}, ${cool - 14}, 0.54)`);
+            cloudCtx.fillStyle = grad;
+
+            const puffs = [
+                [-cloud.width * 0.26, cloud.height * 0.1, cloud.width * 0.26, cloud.height * 0.26],
+                [-cloud.width * 0.05, -cloud.height * 0.06, cloud.width * 0.34, cloud.height * 0.34],
+                [cloud.width * 0.22, cloud.height * 0.06, cloud.width * 0.29, cloud.height * 0.29],
+                [cloud.width * 0.38, cloud.height * 0.12, cloud.width * 0.2, cloud.height * 0.18],
+                [-cloud.width * 0.4, cloud.height * 0.14, cloud.width * 0.18, cloud.height * 0.16]
+            ];
+
+            for (const [px, py, rx, ry] of puffs) {
+                cloudCtx.beginPath();
+                cloudCtx.ellipse(px, py, rx, ry, 0, 0, Math.PI * 2);
+                cloudCtx.fill();
+            }
+
+            cloudCtx.globalAlpha = puffAlpha * 0.22;
+            cloudCtx.fillStyle = 'rgba(255, 255, 255, 1)';
+            cloudCtx.beginPath();
+            cloudCtx.ellipse(0, -cloud.height * 0.08, cloud.width * 0.28, cloud.height * 0.14, 0, 0, Math.PI * 2);
+            cloudCtx.fill();
+            cloudCtx.restore();
+        }
     }
 
     function loadStats() {
@@ -208,8 +292,8 @@
         const model = {
             element: coin,
             x: gameLane.clientWidth + 30,
-            y: randomRange(28, Math.max(34, laneHeight - 45)),
-            size: 20,
+            y: randomRange(34, Math.max(42, laneHeight - 58)),
+            size: 18,
             spin: randomRange(0, 360),
             collected: false
         };
@@ -268,9 +352,9 @@
 
         const runnerRect = {
             x: runner.offsetLeft + 8,
-            y: 18 + game.runnerY,
-            width: 34,
-            height: 42
+            y: 22 + game.runnerY,
+            width: 30,
+            height: 36
         };
 
         for (const coin of game.coins) {
@@ -315,6 +399,7 @@
         game.lastTime = now;
 
         updateDayNightCycle();
+        drawCloudLayer(deltaSeconds, now / 1000);
         drawAtmosphere(deltaSeconds, now / 1000);
         updateMiniGame(deltaSeconds);
 

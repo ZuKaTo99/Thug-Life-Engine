@@ -1,10 +1,10 @@
+
 :root {
     --night: 0;
     --dusk: 0.12;
     --warm: 0.88;
-    --cloud-alpha: 0.54;
     --star-alpha: 0;
-    --mini-alpha: 0.72;
+    --mini-alpha: 0.88;
     --mini-scale: 1;
     --edge-safe: clamp(18px, 2vw, 42px);
     --hud-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -43,35 +43,10 @@ button {
         #050407;
 }
 
-.scene-image {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center center;
-    pointer-events: none;
-    transform: scale(1.012);
-    filter:
-        brightness(calc(1.03 - (var(--night) * 0.31)))
-        contrast(calc(1.04 + (var(--night) * 0.13)))
-        saturate(calc(1.08 - (var(--night) * 0.22)))
-        hue-rotate(calc(var(--night) * -8deg));
-    transition: filter 1000ms linear;
-}
-
-.atmosphere-canvas {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    opacity: calc(0.22 + (var(--night) * 0.33));
-}
-
+.scene-backdrop,
+.scene-image,
+.atmosphere-canvas,
+.cloud-canvas,
 .sky-wash,
 .night-wash,
 .sun-bloom,
@@ -84,26 +59,69 @@ button {
     pointer-events: none;
 }
 
+.scene-backdrop {
+    z-index: 0;
+    inset: -4%;
+    background-image: url("../assets/images/Thug_Life_original_image.jpeg");
+    background-position: center center;
+    background-size: cover;
+    filter:
+        blur(28px)
+        brightness(calc(0.9 - (var(--night) * 0.18)))
+        saturate(calc(1.08 - (var(--night) * 0.18)));
+    transform: scale(1.12);
+    opacity: 0.74;
+}
+
+.scene-image {
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    pointer-events: none;
+    filter:
+        brightness(calc(1.02 - (var(--night) * 0.22)))
+        contrast(calc(1.03 + (var(--night) * 0.1)))
+        saturate(calc(1.06 - (var(--night) * 0.18)))
+        hue-rotate(calc(var(--night) * -7deg))
+        drop-shadow(0 20px 38px rgba(0, 0, 0, 0.18));
+    transition: filter 1000ms linear;
+}
+
+.cloud-canvas {
+    z-index: 8;
+    height: 32vh;
+    width: 100%;
+    opacity: calc(0.72 - (var(--night) * 0.15));
+}
+
+.atmosphere-canvas {
+    z-index: 10;
+    mix-blend-mode: screen;
+    opacity: calc(0.22 + (var(--night) * 0.33));
+}
+
 .sky-wash {
-    z-index: 2;
+    z-index: 3;
     background:
         linear-gradient(180deg,
-            rgba(31, 23, 46, calc(0.18 + (var(--night) * 0.35))) 0%,
-            rgba(14, 9, 22, calc(0.04 + (var(--night) * 0.34))) 42%,
-            rgba(255, 143, 59, calc(0.12 + (var(--dusk) * 0.2))) 100%),
+            rgba(31, 23, 46, calc(0.16 + (var(--night) * 0.34))) 0%,
+            rgba(14, 9, 22, calc(0.03 + (var(--night) * 0.28))) 40%,
+            rgba(255, 143, 59, calc(0.08 + (var(--dusk) * 0.18))) 100%),
         radial-gradient(circle at 80% 29%, rgba(255, 205, 102, calc(0.2 * var(--warm))), transparent 29%);
     mix-blend-mode: soft-light;
-    opacity: 0.98;
+    opacity: 0.92;
 }
 
 .night-wash {
-    z-index: 3;
+    z-index: 4;
     background:
-        radial-gradient(circle at 72% 17%, rgba(120, 150, 255, 0.16), transparent 21%),
+        radial-gradient(circle at 72% 17%, rgba(120, 150, 255, 0.14), transparent 21%),
         linear-gradient(180deg,
-            rgba(8, 10, 28, calc(0.72 * var(--night))) 0%,
-            rgba(5, 7, 21, calc(0.58 * var(--night))) 54%,
-            rgba(8, 5, 14, calc(0.48 * var(--night))) 100%);
+            rgba(8, 10, 28, calc(0.68 * var(--night))) 0%,
+            rgba(5, 7, 21, calc(0.5 * var(--night))) 54%,
+            rgba(8, 5, 14, calc(0.42 * var(--night))) 100%);
     opacity: 1;
     mix-blend-mode: multiply;
 }
@@ -112,8 +130,8 @@ button {
     z-index: 5;
     background:
         radial-gradient(circle at 87% 19%,
-            rgba(255, 224, 130, calc(0.44 * var(--warm))) 0%,
-            rgba(255, 152, 59, calc(0.18 * var(--warm))) 14%,
+            rgba(255, 224, 130, calc(0.38 * var(--warm))) 0%,
+            rgba(255, 152, 59, calc(0.16 * var(--warm))) 14%,
             transparent 35%);
     mix-blend-mode: screen;
     filter: blur(0.4px);
@@ -123,8 +141,8 @@ button {
     z-index: 5;
     background:
         radial-gradient(circle at 78% 13%,
-            rgba(208, 224, 255, calc(0.38 * var(--night))) 0%,
-            rgba(84, 108, 175, calc(0.22 * var(--night))) 7%,
+            rgba(208, 224, 255, calc(0.34 * var(--night))) 0%,
+            rgba(84, 108, 175, calc(0.19 * var(--night))) 7%,
             transparent 18%);
     mix-blend-mode: screen;
     filter: blur(1px);
@@ -135,25 +153,25 @@ button {
     top: auto;
     height: 58%;
     background:
-        linear-gradient(180deg, transparent 0%, rgba(255, 183, 88, calc(0.1 + (var(--dusk) * 0.16))) 38%, rgba(13, 8, 12, 0.24) 100%),
-        radial-gradient(ellipse at 68% 66%, rgba(255, 186, 100, 0.22), transparent 39%);
+        linear-gradient(180deg, transparent 0%, rgba(255, 183, 88, calc(0.08 + (var(--dusk) * 0.14))) 38%, rgba(13, 8, 12, 0.2) 100%),
+        radial-gradient(ellipse at 68% 66%, rgba(255, 186, 100, 0.18), transparent 39%);
     mix-blend-mode: soft-light;
-    opacity: calc(0.56 + (var(--dusk) * 0.24));
+    opacity: calc(0.48 + (var(--dusk) * 0.24));
 }
 
 .light-leak {
     z-index: 7;
     mix-blend-mode: screen;
-    opacity: calc(0.22 + (var(--dusk) * 0.22));
+    opacity: calc(0.18 + (var(--dusk) * 0.22));
     animation: light-breathe 9s ease-in-out infinite alternate;
 }
 
 .light-leak-one {
-    background: radial-gradient(ellipse at 86% 28%, rgba(255, 173, 78, 0.18), transparent 28%);
+    background: radial-gradient(ellipse at 86% 28%, rgba(255, 173, 78, 0.14), transparent 28%);
 }
 
 .light-leak-two {
-    background: linear-gradient(105deg, transparent 43%, rgba(255, 221, 151, 0.08) 48%, transparent 54%);
+    background: linear-gradient(105deg, transparent 43%, rgba(255, 221, 151, 0.06) 48%, transparent 54%);
     transform: translateX(-4vw);
     animation-duration: 13s;
 }
@@ -161,64 +179,26 @@ button {
 .cinematic-vignette {
     z-index: 30;
     background:
-        radial-gradient(ellipse at center, transparent 44%, rgba(0, 0, 0, 0.18) 72%, rgba(0, 0, 0, 0.5) 100%),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.36), transparent 21%, transparent 76%, rgba(0, 0, 0, 0.3));
-    opacity: calc(0.58 + (var(--night) * 0.17));
+        radial-gradient(ellipse at center, transparent 46%, rgba(0, 0, 0, 0.14) 74%, rgba(0, 0, 0, 0.42) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.24), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.22));
+    opacity: calc(0.56 + (var(--night) * 0.16));
 }
-
-.cloud-layer {
-    position: absolute;
-    inset: -5vh -20vw auto -20vw;
-    z-index: 11;
-    height: 38vh;
-    pointer-events: none;
-    overflow: hidden;
-    opacity: calc(var(--cloud-alpha) - (var(--night) * 0.12));
-    mix-blend-mode: screen;
-    mask-image: linear-gradient(180deg, black 0%, black 70%, transparent 100%);
-}
-
-.cloud {
-    position: absolute;
-    left: -36vw;
-    display: block;
-    border-radius: 999px;
-    background:
-        radial-gradient(circle at 18% 58%, rgba(255, 250, 232, 0.74), transparent 30%),
-        radial-gradient(circle at 42% 43%, rgba(255, 242, 218, 0.78), transparent 34%),
-        radial-gradient(circle at 66% 57%, rgba(255, 237, 205, 0.68), transparent 32%),
-        radial-gradient(circle at 82% 49%, rgba(255, 245, 226, 0.52), transparent 24%),
-        linear-gradient(90deg, transparent, rgba(255, 235, 210, 0.22), transparent);
-    filter: blur(var(--blur, 17px));
-    transform: translate3d(-40vw, 0, 0) scale(var(--scale, 1));
-    animation: cloud-drift var(--duration, 72s) linear infinite;
-    animation-delay: var(--delay, 0s);
-}
-
-.cloud-a { top: 6vh; width: 42vw; height: 12vh; --duration: 88s; --delay: -35s; --scale: 1.05; --blur: 20px; }
-.cloud-b { top: 14vh; width: 31vw; height: 9vh; --duration: 69s; --delay: -7s; --scale: 0.82; --blur: 16px; opacity: 0.72; }
-.cloud-c { top: 2vh; width: 27vw; height: 8vh; --duration: 78s; --delay: -52s; --scale: 0.76; --blur: 14px; opacity: 0.62; }
-.cloud-d { top: 20vh; width: 49vw; height: 13vh; --duration: 105s; --delay: -80s; --scale: 1.14; --blur: 24px; opacity: 0.58; }
-.cloud-e { top: 10vh; width: 23vw; height: 7vh; --duration: 57s; --delay: -21s; --scale: 0.7; --blur: 14px; opacity: 0.56; }
-.cloud-f { top: 26vh; width: 36vw; height: 8vh; --duration: 96s; --delay: -44s; --scale: 0.95; --blur: 19px; opacity: 0.42; }
 
 .mini-runner {
     position: absolute;
     z-index: 50;
-    left: 50%;
-    bottom: clamp(14px, 1.7vh, 28px);
-    width: min(860px, 56vw);
-    height: clamp(86px, 8.8vh, 128px);
-    transform: translateX(-50%) scale(var(--mini-scale));
-    transform-origin: bottom center;
+    left: 0;
+    right: 0;
+    bottom: clamp(8px, 1.2vh, 18px);
+    height: clamp(98px, 11vh, 148px);
     opacity: var(--mini-alpha);
-    transition: opacity 250ms ease, transform 250ms ease;
+    transition: opacity 250ms ease;
     pointer-events: auto;
 }
 
 .mini-runner:hover,
 .mini-runner:focus-within {
-    opacity: 0.94;
+    opacity: 1;
 }
 
 .mini-hud {
@@ -227,69 +207,68 @@ button {
     top: 0;
     z-index: 3;
     display: flex;
-    gap: clamp(8px, 1vw, 16px);
+    gap: clamp(10px, 1vw, 18px);
     align-items: center;
     justify-content: center;
-    transform: translate(-50%, -7px);
-    padding: 5px 10px;
-    border: 1px solid rgba(255, 227, 175, 0.22);
-    border-radius: 999px;
-    background: linear-gradient(180deg, rgba(17, 12, 14, 0.54), rgba(8, 6, 8, 0.34));
-    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    color: rgba(255, 241, 209, 0.78);
-    font-size: clamp(10px, 0.78vw, 13px);
-    letter-spacing: 0.04em;
+    transform: translate(-50%, -2px);
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    color: rgba(255, 235, 194, 0.78);
+    font-size: clamp(10px, 0.72vw, 13px);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.68);
 }
 
 .mini-hud strong {
-    color: rgba(255, 209, 95, 0.96);
+    color: rgba(255, 203, 87, 0.98);
     font-weight: 800;
-    text-shadow: 0 0 12px rgba(255, 183, 49, 0.46);
+    text-shadow: 0 0 12px rgba(255, 183, 49, 0.42);
 }
 
 .game-lane {
     position: absolute;
-    inset: 22px 0 0;
+    inset: 0;
     overflow: hidden;
-    border-radius: 999px;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 28%),
-        linear-gradient(90deg, rgba(255, 193, 88, 0.08), rgba(16, 11, 15, 0.5), rgba(255, 115, 73, 0.06));
-    border: 1px solid rgba(255, 222, 165, 0.12);
-    box-shadow:
-        0 14px 46px rgba(0, 0, 0, 0.26),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        inset 0 -16px 22px rgba(0, 0, 0, 0.16);
-    backdrop-filter: blur(8px);
+    background: none;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
 }
 
 .lane-glow {
     position: absolute;
-    inset: 0;
+    left: 10%;
+    right: 10%;
+    bottom: 22px;
+    height: 40px;
     background:
-        radial-gradient(ellipse at 22% 80%, rgba(255, 192, 86, 0.16), transparent 32%),
-        radial-gradient(ellipse at 82% 55%, rgba(96, 169, 255, calc(0.13 * var(--night))), transparent 36%);
+        radial-gradient(ellipse at 20% 70%, rgba(255, 192, 86, 0.12), transparent 36%),
+        radial-gradient(ellipse at 80% 50%, rgba(96, 169, 255, calc(0.1 * var(--night))), transparent 40%);
     mix-blend-mode: screen;
+    filter: blur(6px);
+    opacity: 0.76;
 }
 
 .ground-strip {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 12px;
-    height: 6px;
+    left: clamp(36px, 5vw, 90px);
+    right: clamp(36px, 5vw, 90px);
+    bottom: 22px;
+    height: 4px;
     border-radius: 999px;
     background:
         repeating-linear-gradient(90deg,
-            rgba(255, 222, 145, 0.62) 0 28px,
-            rgba(255, 222, 145, 0.13) 28px 48px,
-            transparent 48px 70px),
-        linear-gradient(90deg, transparent, rgba(255, 203, 111, 0.46), transparent);
-    box-shadow: 0 0 18px rgba(255, 188, 86, 0.18);
-    opacity: 0.62;
+            rgba(255, 214, 124, 0.48) 0 22px,
+            rgba(255, 214, 124, 0.08) 22px 42px,
+            transparent 42px 62px),
+        linear-gradient(90deg, transparent, rgba(255, 203, 111, 0.28), transparent);
+    box-shadow: 0 0 14px rgba(255, 188, 86, 0.16);
+    opacity: 0.5;
     animation: ground-scroll 1.15s linear infinite;
 }
 
@@ -303,14 +282,14 @@ button {
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background:
-        radial-gradient(circle at 35% 28%, rgba(255, 255, 220, 0.95), transparent 22%),
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 220, 0.96), transparent 22%),
         radial-gradient(circle at center, #ffd86f 0 34%, #ffb92d 36% 58%, #8f4b15 62% 100%);
     box-shadow:
-        0 0 12px rgba(255, 198, 62, 0.74),
+        0 0 10px rgba(255, 198, 62, 0.74),
         inset 0 -2px 2px rgba(92, 42, 12, 0.36);
     transform: translate3d(var(--x), var(--y), 0) rotate(var(--spin));
     will-change: transform;
@@ -330,11 +309,11 @@ button {
 
 .runner {
     position: absolute;
-    left: clamp(48px, 7.5%, 76px);
-    bottom: 18px;
+    left: clamp(54px, 18vw, 300px);
+    bottom: 24px;
     z-index: 4;
-    width: 48px;
-    height: 52px;
+    width: 44px;
+    height: 48px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -358,21 +337,21 @@ button {
     position: absolute;
     left: 5px;
     right: 5px;
-    bottom: -3px;
-    height: 8px;
+    bottom: -2px;
+    height: 7px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.36);
+    background: rgba(0, 0, 0, 0.34);
     filter: blur(3px);
     transform: scaleX(calc(1 - (var(--jump-progress, 0) * 0.34)));
-    opacity: calc(0.42 - (var(--jump-progress, 0) * 0.2));
+    opacity: calc(0.38 - (var(--jump-progress, 0) * 0.18));
 }
 
 .runner-body {
     position: absolute;
-    left: 12px;
-    bottom: 6px;
-    width: 27px;
-    height: 30px;
+    left: 11px;
+    bottom: 5px;
+    width: 25px;
+    height: 28px;
     border-radius: 45% 48% 44% 48%;
     background:
         radial-gradient(circle at 37% 26%, rgba(255, 240, 215, 0.6), transparent 20%),
@@ -382,10 +361,10 @@ button {
 
 .runner-head {
     position: absolute;
-    left: 16px;
-    bottom: 29px;
-    width: 28px;
-    height: 24px;
+    left: 15px;
+    bottom: 27px;
+    width: 26px;
+    height: 22px;
     border-radius: 45% 48% 42% 52%;
     background:
         radial-gradient(circle at 36% 32%, rgba(255, 243, 220, 0.62), transparent 20%),
@@ -421,8 +400,8 @@ button {
 
 .runner-nose {
     position: absolute;
-    left: 13px;
-    top: 14px;
+    left: 12px;
+    top: 13px;
     width: 4px;
     height: 3px;
     border-radius: 50%;
@@ -432,9 +411,9 @@ button {
 .runner-tail {
     position: absolute;
     left: 3px;
-    bottom: 16px;
-    width: 17px;
-    height: 11px;
+    bottom: 15px;
+    width: 16px;
+    height: 10px;
     border-radius: 60% 30% 50% 60%;
     background: linear-gradient(135deg, #685241, #241919);
     transform-origin: right center;
@@ -447,27 +426,23 @@ button {
 
 .game-hint {
     position: absolute;
-    right: 18px;
-    bottom: 21px;
-    color: rgba(255, 240, 205, 0.42);
-    font-size: clamp(10px, 0.74vw, 12px);
+    right: clamp(18px, 3vw, 56px);
+    bottom: 26px;
+    color: rgba(255, 240, 205, 0.36);
+    font-size: clamp(10px, 0.72vw, 12px);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     transition: opacity 350ms ease;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .game-hint.hidden {
     opacity: 0;
 }
 
-@keyframes cloud-drift {
-    from { transform: translate3d(-38vw, 0, 0) scale(var(--scale, 1)); }
-    to { transform: translate3d(156vw, 0, 0) scale(var(--scale, 1)); }
-}
-
 @keyframes ground-scroll {
     from { background-position: 0 0, 0 0; }
-    to { background-position: -70px 0, 0 0; }
+    to { background-position: -62px 0, 0 0; }
 }
 
 @keyframes light-breathe {
@@ -487,22 +462,26 @@ button {
 
 @media (min-aspect-ratio: 16/9) {
     .scene-image {
-        object-position: center 48%;
+        object-position: center center;
     }
 }
 
 @media (max-width: 1200px), (max-height: 760px) {
     :root {
-        --mini-scale: 0.9;
+        --mini-scale: 0.92;
+        --mini-alpha: 0.94;
     }
 
-    .mini-runner {
-        width: min(780px, 70vw);
+    .runner {
+        left: clamp(34px, 10vw, 120px);
+    }
+
+    .mini-hud {
+        top: 4px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .cloud,
     .ground-strip,
     .runner-tail,
     .light-leak {
