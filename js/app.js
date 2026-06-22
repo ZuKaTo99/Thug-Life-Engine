@@ -3,8 +3,8 @@
     const CONFIG = {
         localStorageKey: 'thugLifeEngineStatsV1',
         dayNightCycleMinutes: 20,
-        atmosphereParticleCount: 38,
-        starCount: 44,
+        atmosphereParticleCount: 0,
+        starCount: 56,
         coinSpawnMinSeconds: 1.8,
         coinSpawnMaxSeconds: 3.1,
         coinSpeed: 230,
@@ -60,18 +60,6 @@
         runnerVY: 0,
         isJumping: false,
         hasInteracted: false
-    };
-
-    window.thugLifeRuntime = {
-        phase,
-        game,
-        elements: {
-            wallpaper: document.getElementById('wallpaper'),
-            runner,
-            gameLane,
-            miniRunner,
-            coinLayer
-        }
     };
 
     function clamp(value, min, max) {
@@ -191,7 +179,7 @@
             if (mote.y > atmosphere.height + 20) mote.y = -20;
 
             const shimmer = 0.68 + Math.sin(elapsedSeconds * 0.9 + mote.x * 0.01) * 0.32;
-            const warmAlpha = mote.alpha * shimmer * (0.48 + phase.dusk * 0.54 + phase.night * 0.2);
+            const warmAlpha = mote.alpha * shimmer * clamp((phase.night - 0.35) / 0.65, 0, 1) * 0.45;
             ctx.globalAlpha = warmAlpha;
             ctx.fillStyle = mote.warmth > 0.5 ? 'rgba(255, 196, 105, 1)' : 'rgba(158, 196, 255, 1)';
             ctx.beginPath();

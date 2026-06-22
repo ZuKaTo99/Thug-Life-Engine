@@ -1,84 +1,96 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js";
 
 (() => {
-    const canvas = document.getElementById('threeCanvas');
-    const runnerElement = document.getElementById('runner');
-    if (!canvas || !runnerElement || !THREE.WebGLRenderer) {
-        return;
-    }
+    const canvas = document.getElementById("threeCanvas");
+    const runnerElement = document.getElementById("runner");
+    if (!canvas || !runnerElement) return;
 
     const state = {
-        width: 0,
-        height: 0,
-        dpr: 1,
-        time: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        dpr: Math.min(window.devicePixelRatio || 1, 1.75),
         night: 0,
         dusk: 0,
-        warm: 1
+        time: 0
     };
 
     const renderer = new THREE.WebGLRenderer({
         canvas,
         alpha: true,
         antialias: true,
-        powerPreference: 'high-performance'
+        powerPreference: "high-performance"
     });
     renderer.setClearColor(0x000000, 0);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-960, 960, 540, -540, -1000, 1000);
-    camera.position.z = 400;
+    const camera = new THREE.OrthographicCamera(-state.width / 2, state.width / 2, state.height / 2, -state.height / 2, 0.1, 2000);
+    camera.position.set(0, 0, 800);
+    camera.lookAt(0, 0, 0);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.75);
+    const keyLight = new THREE.DirectionalLight(0xffd5a3, 1.2);
+    keyLight.position.set(200, 280, 260);
+    const fillLight = new THREE.DirectionalLight(0x89b7ff, 0.9);
+    fillLight.position.set(-180, 110, 280);
+    const rimLight = new THREE.DirectionalLight(0xff4e73, 0.4);
+    rimLight.position.set(-220, 40, 180);
+    scene.add(ambient, keyLight, fillLight, rimLight);
 
     const overlayGroup = new THREE.Group();
     scene.add(overlayGroup);
 
-    const cityLights = new THREE.Group();
-    const cityBloom = new THREE.Group();
-    const roadLights = new THREE.Group();
-    const rainGroup = new THREE.Group();
-    const frontRainGroup = new THREE.Group();
-    const skylineGroup = new THREE.Group();
-    overlayGroup.add(cityLights, cityBloom, roadLights, rainGroup, frontRainGroup, skylineGroup);
+    const cityGroup = new THREE.Group();
+    const bloomGroup = new THREE.Group();
+    const roadGroup = new THREE.Group();
+    const rainBackGroup = new THREE.Group();
+    const rainFrontGroup = new THREE.Group();
+    overlayGroup.add(cityGroup, bloomGroup, roadGroup, rainBackGroup, rainFrontGroup);
 
-    const carRig = new THREE.Group();
-    overlayGroup.add(carRig);
+    const carRoot = new THREE.Group();
+    overlayGroup.add(carRoot);
 
-    const textures = {
-        warmLight: makeGlowTexture('rgba(255, 214, 129, 1)', 'rgba(255, 153, 62, 0.36)'),
-        coolLight: makeGlowTexture('rgba(133, 196, 255, 1)', 'rgba(67, 130, 255, 0.18)'),
-        redGlow: makeGlowTexture('rgba(255, 74, 94, 1)', 'rgba(255, 52, 86, 0.08)'),
-        whiteGlow: makeGlowTexture('rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.02)')
+    const runtime = {
+        cityLights: [],
+        blooms: [],
+        roadBars: [],
+        rainBack: [],
+        rainFront: [],
+        car: null,
+        groundGlow: null,
+        headLights: [],
+        tailLights: [],
+        wheels: []
     };
 
-    buildCityLights();
-    buildRoadLights();
-    buildSkyline();
-    buildRain();
-    buildFrontRain();
-    buildCar();
+    const tex = {
+        warm: createGlowTexture("rgba(255, 211, 128, 1)", "rgba(255, 154, 74, 0.28)"),
+        red: createGlowTexture("rgba(255, 92, 112, 1)", "rgba(255, 56, 90, 0.20)"),
+        white: createGlowTexture("rgba(255, 248, 225, 1)", "rgba(255, 255, 255, 0.08)"),
+        cyan: createGlowTexture("rgba(135, 214, 255, 1)", "rgba(70, 154, 255, 0.18)")
+    };
 
-    function makeGlowTexture(innerColor, outerColor) {
+    function createGlowTexture(inner, outer) {
         const size = 256;
-        const c = document.createElement('canvas');
+        const c = document.createElement("canvas");
         c.width = size;
         c.height = size;
-        const g = c.getContext('2d');
-        const gradient = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-        gradient.addColorStop(0, innerColor);
-        gradient.addColorStop(0.28, innerColor.replace('1)', '0.88)'));
-        gradient.addColorStop(0.58, outerColor);
-        gradient.addColorStop(1, 'rgba(0,0,0,0)');
-        g.fillStyle = gradient;
+        const g = c.getContext("2d");
+        const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+        grad.addColorStop(0, inner);
+        grad.addColorStop(0.28, inner.replace("1)", "0.85)"));
+        grad.addColorStop(0.6, outer);
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = grad;
         g.fillRect(0, 0, size, size);
         const texture = new THREE.CanvasTexture(c);
         texture.colorSpace = THREE.SRGBColorSpace;
         return texture;
     }
 
-    function makeSprite(texture, sizeX, sizeY, color = 0xffffff, opacity = 1) {
+    function makeSprite(map, w, h, color = 0xffffff, opacity = 1) {
         const material = new THREE.SpriteMaterial({
-            map: texture,
+            map,
             color,
             transparent: true,
             opacity,
@@ -86,247 +98,239 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.m
             blending: THREE.AdditiveBlending
         });
         const sprite = new THREE.Sprite(material);
-        sprite.scale.set(sizeX, sizeY, 1);
+        sprite.scale.set(w, h, 1);
         return sprite;
     }
 
-    function normToWorld(nx, ny) {
-        return {
-            x: (nx - 0.5) * state.width,
-            y: (0.5 - ny) * state.height
-        };
+    function norm(nx, ny, z = 0) {
+        return new THREE.Vector3((nx - 0.5) * state.width, (0.5 - ny) * state.height, z);
     }
 
-    function addCluster(targetGroup, count, bounds, texture, sizeRange, meta = {}) {
+    function rand(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    function clamp(v, min, max) {
+        return Math.min(Math.max(v, min), max);
+    }
+
+    function smooth(t) {
+        return t * t * (3 - 2 * t);
+    }
+
+    function readPhase() {
+        const styles = getComputedStyle(document.documentElement);
+        state.night = parseFloat(styles.getPropertyValue("--night")) || 0;
+        state.dusk = parseFloat(styles.getPropertyValue("--dusk")) || 0;
+    }
+
+    function addCityClusters() {
+        const clusters = [
+            { x0: 0.07, x1: 0.22, y0: 0.44, y1: 0.67, count: 48 },
+            { x0: 0.52, x1: 0.88, y0: 0.64, y1: 0.87, count: 62 },
+            { x0: 0.56, x1: 0.78, y0: 0.44, y1: 0.57, count: 20 },
+            { x0: 0.10, x1: 0.92, y0: 0.79, y1: 0.91, count: 24 }
+        ];
+        clusters.forEach((cluster, idx) => {
+            for (let i = 0; i < cluster.count; i += 1) {
+                const sprite = makeSprite(tex.warm, rand(8, 18), rand(8, 18), 0xffffff, 0);
+                sprite.userData = {
+                    nx: rand(cluster.x0, cluster.x1),
+                    ny: rand(cluster.y0, cluster.y1),
+                    baseOpacity: idx === 3 ? rand(0.18, 0.36) : rand(0.38, 0.85),
+                    twinkle: rand(0, Math.PI * 2),
+                    speed: rand(0.7, 2.2)
+                };
+                cityGroup.add(sprite);
+                runtime.cityLights.push(sprite);
+            }
+        });
+
+        for (let i = 0; i < 18; i += 1) {
+            const bloom = makeSprite(i % 2 ? tex.red : tex.warm, rand(26, 52), rand(26, 52), 0xffffff, 0);
+            bloom.userData = {
+                nx: rand(0.08, 0.9),
+                ny: rand(0.56, 0.89),
+                baseOpacity: rand(0.08, 0.22),
+                twinkle: rand(0, Math.PI * 2),
+                speed: rand(0.4, 1.1)
+            };
+            bloomGroup.add(bloom);
+            runtime.blooms.push(bloom);
+        }
+
+        for (let i = 0; i < 10; i += 1) {
+            const bar = new THREE.Mesh(
+                new THREE.PlaneGeometry(rand(80, 180), 3.2),
+                new THREE.MeshBasicMaterial({
+                    color: i % 2 === 0 ? 0xffbc66 : 0xff6078,
+                    transparent: true,
+                    opacity: 0,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                })
+            );
+            bar.userData = {
+                nx: rand(0.08, 0.94),
+                ny: rand(0.80, 0.92),
+                phase: rand(0, Math.PI * 2),
+                speed: rand(0.2, 0.7)
+            };
+            roadGroup.add(bar);
+            runtime.roadBars.push(bar);
+        }
+    }
+
+    function addRain(group, count, front = false) {
         for (let i = 0; i < count; i += 1) {
-            const nx = rand(bounds.x0, bounds.x1);
-            const ny = rand(bounds.y0, bounds.y1);
-            const size = rand(sizeRange[0], sizeRange[1]);
-            const sprite = makeSprite(texture, size, size, meta.color ?? 0xffffff, meta.opacity ?? 1);
-            sprite.userData.baseOpacity = meta.opacity ?? 1;
-            sprite.userData.twinkle = rand(0, Math.PI * 2);
-            sprite.userData.twinkleSpeed = rand(0.6, 1.8);
-            sprite.userData.nx = nx;
-            sprite.userData.ny = ny;
-            targetGroup.add(sprite);
-        }
-    }
-
-    function buildCityLights() {
-        addCluster(cityLights, 44, { x0: 0.06, x1: 0.22, y0: 0.44, y1: 0.66 }, textures.warmLight, [8, 16], { opacity: 0.84 });
-        addCluster(cityLights, 52, { x0: 0.52, x1: 0.86, y0: 0.63, y1: 0.84 }, textures.warmLight, [7, 15], { opacity: 0.86 });
-        addCluster(cityLights, 18, { x0: 0.58, x1: 0.77, y0: 0.43, y1: 0.58 }, textures.warmLight, [6, 12], { opacity: 0.66 });
-        addCluster(cityLights, 24, { x0: 0.10, x1: 0.92, y0: 0.78, y1: 0.90 }, textures.whiteGlow, [4, 9], { opacity: 0.42 });
-        addCluster(cityBloom, 12, { x0: 0.08, x1: 0.25, y0: 0.45, y1: 0.68 }, textures.warmLight, [28, 44], { opacity: 0.24 });
-        addCluster(cityBloom, 14, { x0: 0.54, x1: 0.88, y0: 0.64, y1: 0.86 }, textures.redGlow, [30, 52], { opacity: 0.16 });
-    }
-
-    function buildRoadLights() {
-        for (let i = 0; i < 8; i += 1) {
-            const lineGeo = new THREE.PlaneGeometry(rand(90, 160), 3.5);
-            const lineMat = new THREE.MeshBasicMaterial({
-                color: new THREE.Color(i % 2 === 0 ? 0xffbf66 : 0xff5b71),
-                transparent: true,
-                opacity: 0.22,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending
-            });
-            const mesh = new THREE.Mesh(lineGeo, lineMat);
-            mesh.userData.nx = rand(0.10, 0.94);
-            mesh.userData.ny = rand(0.81, 0.92);
-            mesh.userData.speed = rand(0.02, 0.06);
-            mesh.userData.phase = rand(0, Math.PI * 2);
-            roadLights.add(mesh);
-        }
-    }
-
-    function buildSkyline() {
-        for (let i = 0; i < 6; i += 1) {
-            const geo = new THREE.PlaneGeometry(rand(160, 280), rand(1.6, 2.6));
-            const mat = new THREE.MeshBasicMaterial({
-                color: new THREE.Color(i % 2 === 0 ? 0x92b8ff : 0xffd08a),
-                transparent: true,
-                opacity: 0.11,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending
-            });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.rotation.z = rand(-0.12, 0.12);
-            mesh.userData.nx = rand(0.08, 0.90);
-            mesh.userData.ny = rand(0.11, 0.23);
-            mesh.userData.phase = rand(0, Math.PI * 2);
-            skylineGroup.add(mesh);
-        }
-    }
-
-    function buildRain() {
-        for (let i = 0; i < 160; i += 1) {
-            const geometry = new THREE.PlaneGeometry(rand(1.2, 2.0), rand(18, 34));
-            const material = new THREE.MeshBasicMaterial({
-                color: 0xbfdcff,
-                transparent: true,
-                opacity: 0.2,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending
-            });
-            const drop = new THREE.Mesh(geometry, material);
-            drop.rotation.z = -0.34;
-            drop.userData.nx = Math.random();
-            drop.userData.ny = Math.random();
-            drop.userData.speed = rand(0.38, 0.9);
-            drop.userData.alpha = rand(0.12, 0.34);
-            rainGroup.add(drop);
-        }
-    }
-
-    function buildFrontRain() {
-        for (let i = 0; i < 54; i += 1) {
-            const geometry = new THREE.PlaneGeometry(rand(1.8, 3.0), rand(30, 64));
-            const material = new THREE.MeshBasicMaterial({
-                color: 0xe8f4ff,
-                transparent: true,
-                opacity: 0.18,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending
-            });
-            const drop = new THREE.Mesh(geometry, material);
+            const drop = new THREE.Mesh(
+                new THREE.PlaneGeometry(front ? rand(2.2, 3.6) : rand(1.2, 2.2), front ? rand(42, 76) : rand(20, 38)),
+                new THREE.MeshBasicMaterial({
+                    color: front ? 0xf1f7ff : 0xb8d5ff,
+                    transparent: true,
+                    opacity: 0,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                })
+            );
             drop.rotation.z = -0.38;
-            drop.userData.nx = Math.random();
-            drop.userData.ny = Math.random();
-            drop.userData.speed = rand(0.7, 1.35);
-            drop.userData.alpha = rand(0.10, 0.24);
-            frontRainGroup.add(drop);
+            drop.userData = {
+                nx: Math.random(),
+                ny: Math.random(),
+                speed: front ? rand(0.9, 1.45) : rand(0.42, 0.95),
+                alpha: front ? rand(0.07, 0.18) : rand(0.08, 0.22)
+            };
+            group.add(drop);
+            (front ? runtime.rainFront : runtime.rainBack).push(drop);
         }
     }
 
-    function shapeFrom(points) {
-        const shape = new THREE.Shape();
-        shape.moveTo(points[0][0], points[0][1]);
-        for (let i = 1; i < points.length; i += 1) {
-            shape.lineTo(points[i][0], points[i][1]);
-        }
-        shape.closePath();
-        return shape;
-    }
+    function createCar() {
+        const car = new THREE.Group();
 
-    function buildCar() {
-        const bodyShape = shapeFrom([
-            [-58, -8], [-48, -20], [-25, -28], [8, -30], [30, -26], [50, -15], [60, -4], [56, 10], [38, 12], [-48, 12], [-58, 6]
-        ]);
-        const bodyGeo = new THREE.ExtrudeGeometry(bodyShape, {
-            depth: 18,
-            bevelEnabled: true,
-            bevelSize: 1.6,
-            bevelThickness: 1.8,
-            bevelSegments: 3
-        });
-        bodyGeo.center();
         const bodyMat = new THREE.MeshPhysicalMaterial({
-            color: 0xb71332,
-            metalness: 0.72,
-            roughness: 0.32,
+            color: 0xb21330,
+            metalness: 0.78,
+            roughness: 0.28,
             clearcoat: 1,
-            clearcoatRoughness: 0.12,
-            emissive: 0x2a040d,
-            emissiveIntensity: 0.55
+            clearcoatRoughness: 0.08,
+            emissive: 0x25050c,
+            emissiveIntensity: 0.2
         });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        carRig.add(body);
-
-        const accent = new THREE.Mesh(
-            new THREE.BoxGeometry(116, 3.2, 14),
-            new THREE.MeshBasicMaterial({ color: 0xff4f6b, transparent: true, opacity: 0.42, blending: THREE.AdditiveBlending })
-        );
-        accent.position.set(0, -7, 3);
-        carRig.add(accent);
-
-        const cabinShape = shapeFrom([
-            [-18, -17], [-6, -31], [15, -31], [32, -20], [16, -4], [-9, -4]
-        ]);
-        const cabinGeo = new THREE.ExtrudeGeometry(cabinShape, {
-            depth: 10,
-            bevelEnabled: true,
-            bevelSize: 1.0,
-            bevelThickness: 1.2,
-            bevelSegments: 2
-        });
-        cabinGeo.center();
-        const cabinMat = new THREE.MeshPhysicalMaterial({
-            color: 0x86d9ff,
-            metalness: 0.08,
-            roughness: 0.08,
-            transmission: 0.2,
+        const darkMat = new THREE.MeshStandardMaterial({ color: 0x13161b, metalness: 0.45, roughness: 0.55 });
+        const glassMat = new THREE.MeshPhysicalMaterial({
+            color: 0x94d6ff,
+            metalness: 0.02,
+            roughness: 0.05,
+            transmission: 0.15,
             transparent: true,
             opacity: 0.82,
-            emissive: 0x12354a,
-            emissiveIntensity: 0.9
+            emissive: 0x0f2d42,
+            emissiveIntensity: 0.35
         });
-        const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-        cabin.position.set(8, -8, 8);
-        carRig.add(cabin);
+        const accentMat = new THREE.MeshBasicMaterial({ color: 0xff5470, transparent: true, opacity: 0.32, blending: THREE.AdditiveBlending });
 
-        const spoiler = new THREE.Mesh(
-            new THREE.BoxGeometry(19, 3, 10),
-            new THREE.MeshPhysicalMaterial({ color: 0x14171d, metalness: 0.45, roughness: 0.5 })
-        );
-        spoiler.position.set(-48, -20, 4);
-        carRig.add(spoiler);
+        const chassis = new THREE.Mesh(new THREE.BoxGeometry(126, 18, 38), bodyMat);
+        chassis.position.set(0, 6, 0);
+        car.add(chassis);
 
-        const splitter = new THREE.Mesh(
-            new THREE.BoxGeometry(20, 2, 8),
-            new THREE.MeshBasicMaterial({ color: 0xffb870, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending })
-        );
-        splitter.position.set(54, 8, 3);
-        carRig.add(splitter);
+        const hood = new THREE.Mesh(new THREE.BoxGeometry(34, 10, 36), bodyMat);
+        hood.position.set(43, 0, 0);
+        hood.rotation.z = -0.14;
+        car.add(hood);
 
-        const underGlow = makeSprite(textures.redGlow, 150, 34, 0xffffff, 0.48);
-        underGlow.position.set(0, 16, -12);
-        carRig.add(underGlow);
-        const headLight = makeSprite(textures.whiteGlow, 20, 10, 0xfff0d2, 0.72);
-        headLight.position.set(62, 2, 10);
-        carRig.add(headLight);
-        const tailLight = makeSprite(textures.redGlow, 18, 8, 0xffffff, 0.68);
-        tailLight.position.set(-62, 3, 10);
-        carRig.add(tailLight);
+        const trunk = new THREE.Mesh(new THREE.BoxGeometry(26, 9, 34), bodyMat);
+        trunk.position.set(-44, 0, 0);
+        trunk.rotation.z = 0.12;
+        car.add(trunk);
 
-        const wheelGroup = new THREE.Group();
-        carRig.add(wheelGroup);
+        const cabinBase = new THREE.Mesh(new THREE.BoxGeometry(56, 14, 34), darkMat);
+        cabinBase.position.set(4, -9, 0);
+        car.add(cabinBase);
+
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(38, 12, 30), bodyMat);
+        roof.position.set(2, -18, 0);
+        car.add(roof);
+
+        const windshield = new THREE.Mesh(new THREE.BoxGeometry(18, 10, 30), glassMat);
+        windshield.position.set(20, -14, 0);
+        windshield.rotation.z = -0.48;
+        car.add(windshield);
+
+        const rearWindow = new THREE.Mesh(new THREE.BoxGeometry(16, 9, 28), glassMat);
+        rearWindow.position.set(-16, -15, 0);
+        rearWindow.rotation.z = 0.35;
+        car.add(rearWindow);
+
+        const sideSkirt = new THREE.Mesh(new THREE.BoxGeometry(122, 2.4, 30), accentMat);
+        sideSkirt.position.set(0, 16, 0);
+        car.add(sideSkirt);
+
+        const spoilerStandL = new THREE.Mesh(new THREE.BoxGeometry(2, 7, 3), darkMat);
+        spoilerStandL.position.set(-56, -18, -10);
+        const spoilerStandR = spoilerStandL.clone();
+        spoilerStandR.position.z = 10;
+        const spoilerWing = new THREE.Mesh(new THREE.BoxGeometry(20, 2.5, 16), darkMat);
+        spoilerWing.position.set(-56, -22, 0);
+        car.add(spoilerStandL, spoilerStandR, spoilerWing);
+
+        const splitter = new THREE.Mesh(new THREE.BoxGeometry(18, 1.6, 26), darkMat);
+        splitter.position.set(59, 16, 0);
+        car.add(splitter);
+
+        const underGlow = makeSprite(tex.red, 150, 36, 0xffffff, 0.32);
+        underGlow.position.set(0, 25, -10);
+        car.add(underGlow);
+        runtime.groundGlow = underGlow;
+
+        const lightLeft = makeSprite(tex.white, 16, 10, 0xfff5dd, 0.15);
+        lightLeft.position.set(63, 4, -10);
+        const lightRight = lightLeft.clone();
+        lightRight.position.z = 10;
+        car.add(lightLeft, lightRight);
+        runtime.headLights.push(lightLeft, lightRight);
+
+        const tailLeft = makeSprite(tex.red, 14, 8, 0xffffff, 0.16);
+        tailLeft.position.set(-63, 4, -10);
+        const tailRight = tailLeft.clone();
+        tailRight.position.z = 10;
+        car.add(tailLeft, tailRight);
+        runtime.tailLights.push(tailLeft, tailRight);
+
+        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0c0c0e, metalness: 0.28, roughness: 0.8 });
+        const rimMat = new THREE.MeshStandardMaterial({ color: 0xb9c1cf, metalness: 0.95, roughness: 0.18 });
         [
-            { x: -34, y: 17 },
-            { x: 34, y: 17 }
-        ].forEach(({ x, y }) => {
-            const tire = new THREE.Mesh(
-                new THREE.CylinderGeometry(13, 13, 10, 28),
-                new THREE.MeshStandardMaterial({ color: 0x0b0b0d, metalness: 0.25, roughness: 0.82 })
-            );
-            tire.rotation.z = Math.PI / 2;
-            tire.position.set(x, y, 1);
-            wheelGroup.add(tire);
-
-            const rim = new THREE.Mesh(
-                new THREE.CylinderGeometry(7, 7, 11.5, 18),
-                new THREE.MeshStandardMaterial({ color: 0xbcc3d2, metalness: 0.95, roughness: 0.18, emissive: 0x101214, emissiveIntensity: 0.2 })
-            );
-            rim.rotation.z = Math.PI / 2;
-            rim.position.set(x, y, 2);
-            wheelGroup.add(rim);
+            { x: -36, y: 18, z: -16 },
+            { x: 34, y: 18, z: -16 },
+            { x: -36, y: 18, z: 16 },
+            { x: 34, y: 18, z: 16 }
+        ].forEach((p) => {
+            const wheel = new THREE.Group();
+            const tire = new THREE.Mesh(new THREE.CylinderGeometry(11, 11, 8, 26), wheelMat);
+            tire.rotation.x = Math.PI / 2;
+            const rim = new THREE.Mesh(new THREE.CylinderGeometry(6.5, 6.5, 8.4, 18), rimMat);
+            rim.rotation.x = Math.PI / 2;
+            wheel.add(tire, rim);
+            wheel.position.set(p.x, p.y, p.z);
+            car.add(wheel);
+            runtime.wheels.push(wheel);
         });
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.56));
-        const key = new THREE.DirectionalLight(0xffc688, 1.24);
-        key.position.set(150, 120, 220);
-        const rim = new THREE.DirectionalLight(0x87c8ff, 0.76);
-        rim.position.set(-120, 50, 180);
-        scene.add(key, rim);
-
-        carRig.userData = { body, cabin, underGlow, headLight, tailLight, accent, wheelGroup };
+        car.rotation.x = 0.22;
+        car.rotation.y = -0.46;
+        car.rotation.z = 0.02;
+        car.scale.set(1.05, 1.05, 1.05);
+        carRoot.add(car);
+        runtime.car = car;
     }
 
-    function readCssPhase() {
-        const styles = getComputedStyle(document.documentElement);
-        state.night = parseFloat(styles.getPropertyValue('--night')) || 0;
-        state.dusk = parseFloat(styles.getPropertyValue('--dusk')) || 0;
-        state.warm = parseFloat(styles.getPropertyValue('--warm')) || 1;
+    function updateScreenAnchors() {
+        const all = [...runtime.cityLights, ...runtime.blooms, ...runtime.roadBars];
+        all.forEach((obj) => {
+            const p = norm(obj.userData.nx, obj.userData.ny, obj.position.z || 0);
+            obj.position.x = p.x;
+            obj.position.y = p.y;
+        });
     }
 
     function resize() {
@@ -340,110 +344,95 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.m
         camera.top = state.height / 2;
         camera.bottom = -state.height / 2;
         camera.updateProjectionMatrix();
-        [...cityLights.children, ...cityBloom.children, ...roadLights.children, ...skylineGroup.children].forEach((child) => {
-            if (child.userData.nx === undefined) return;
-            const pos = normToWorld(child.userData.nx, child.userData.ny);
-            child.position.set(pos.x, pos.y, child.position.z || 0);
-        });
+        updateScreenAnchors();
     }
 
-    function updateCityLights(elapsed) {
-        const nightFactor = smooth(clamp((state.night - 0.16) / 0.84, 0, 1));
-        const duskBoost = state.dusk;
-        cityLights.children.forEach((sprite, idx) => {
-            const twinkle = 0.76 + Math.sin(elapsed * sprite.userData.twinkleSpeed + sprite.userData.twinkle + idx) * 0.24;
-            sprite.material.opacity = sprite.userData.baseOpacity * (nightFactor * 0.85 + duskBoost * 0.35) * twinkle;
+    function updateCity(elapsed) {
+        const duskActivation = clamp((state.dusk - 0.10) / 0.55, 0, 1);
+        const nightActivation = smooth(clamp((state.night - 0.35) / 0.65, 0, 1));
+        const cityActivation = Math.max(duskActivation * 0.55, nightActivation);
+
+        runtime.cityLights.forEach((sprite, idx) => {
+            const twinkle = 0.8 + Math.sin(elapsed * sprite.userData.speed + sprite.userData.twinkle + idx) * 0.2;
+            sprite.material.opacity = sprite.userData.baseOpacity * cityActivation * twinkle;
         });
-        cityBloom.children.forEach((sprite, idx) => {
-            const pulse = 0.82 + Math.sin(elapsed * 0.8 + sprite.userData.twinkle + idx) * 0.18;
-            sprite.material.opacity = sprite.userData.baseOpacity * (nightFactor * 0.9 + duskBoost * 0.25) * pulse;
+        runtime.blooms.forEach((sprite, idx) => {
+            const pulse = 0.84 + Math.sin(elapsed * sprite.userData.speed + sprite.userData.twinkle + idx) * 0.16;
+            sprite.material.opacity = sprite.userData.baseOpacity * cityActivation * pulse;
         });
-        roadLights.children.forEach((mesh, idx) => {
-            const pos = normToWorld(mesh.userData.nx, mesh.userData.ny);
-            const drift = Math.sin(elapsed * mesh.userData.speed * 7 + mesh.userData.phase) * 18;
-            mesh.position.set(pos.x + drift, pos.y, -20);
-            mesh.material.opacity = (0.06 + nightFactor * 0.2 + duskBoost * 0.08) * (0.7 + Math.sin(elapsed + idx) * 0.3);
-        });
-        skylineGroup.children.forEach((mesh) => {
-            const pos = normToWorld(mesh.userData.nx, mesh.userData.ny);
-            mesh.position.set(pos.x, pos.y + Math.sin(elapsed * 0.6 + mesh.userData.phase) * 4, -60);
-            mesh.material.opacity = 0.03 + state.dusk * 0.07 + nightFactor * 0.05;
+        runtime.roadBars.forEach((bar, idx) => {
+            const base = norm(bar.userData.nx, bar.userData.ny, -20);
+            const drift = Math.sin(elapsed * bar.userData.speed + bar.userData.phase) * 22;
+            bar.position.set(base.x + drift, base.y, -20);
+            bar.material.opacity = cityActivation * (0.06 + (0.08 * (0.5 + 0.5 * Math.sin(elapsed + idx))));
         });
     }
 
     function updateRain() {
-        const rainFactor = clamp((state.night - 0.42) / 0.58, 0, 1) * 0.9 + state.dusk * 0.35;
-        rainGroup.visible = rainFactor > 0.04;
-        frontRainGroup.visible = rainFactor > 0.06;
-        rainGroup.children.forEach((drop) => {
-            drop.userData.ny += drop.userData.speed * 0.0055;
-            drop.userData.nx += drop.userData.speed * 0.0013;
-            if (drop.userData.ny > 1.08 || drop.userData.nx > 1.08) {
-                drop.userData.ny = -0.08;
+        const rainActivation = smooth(clamp((state.night - 0.62) / 0.38, 0, 1));
+        rainBackGroup.visible = rainActivation > 0.02;
+        rainFrontGroup.visible = rainActivation > 0.02;
+        runtime.rainBack.forEach((drop) => {
+            drop.userData.ny += drop.userData.speed * 0.0058;
+            drop.userData.nx += drop.userData.speed * 0.0014;
+            if (drop.userData.ny > 1.1 || drop.userData.nx > 1.08) {
+                drop.userData.ny = -0.10;
                 drop.userData.nx = rand(-0.08, 1);
             }
-            const pos = normToWorld(drop.userData.nx, drop.userData.ny);
-            drop.position.set(pos.x, pos.y, 90);
-            drop.material.opacity = drop.userData.alpha * rainFactor;
+            const p = norm(drop.userData.nx, drop.userData.ny, 120);
+            drop.position.set(p.x, p.y, 120);
+            drop.material.opacity = drop.userData.alpha * rainActivation;
         });
-        frontRainGroup.children.forEach((drop) => {
-            drop.userData.ny += drop.userData.speed * 0.008;
-            drop.userData.nx += drop.userData.speed * 0.0017;
-            if (drop.userData.ny > 1.12 || drop.userData.nx > 1.12) {
-                drop.userData.ny = -0.12;
-                drop.userData.nx = rand(-0.12, 1);
+        runtime.rainFront.forEach((drop) => {
+            drop.userData.ny += drop.userData.speed * 0.0084;
+            drop.userData.nx += drop.userData.speed * 0.0019;
+            if (drop.userData.ny > 1.15 || drop.userData.nx > 1.10) {
+                drop.userData.ny = -0.15;
+                drop.userData.nx = rand(-0.10, 1);
             }
-            const pos = normToWorld(drop.userData.nx, drop.userData.ny);
-            drop.position.set(pos.x, pos.y, 120);
-            drop.material.opacity = drop.userData.alpha * rainFactor;
+            const p = norm(drop.userData.nx, drop.userData.ny, 180);
+            drop.position.set(p.x, p.y, 180);
+            drop.material.opacity = drop.userData.alpha * rainActivation;
         });
     }
 
     function updateCar(elapsed) {
+        if (!runtime.car) return;
         const rect = runnerElement.getBoundingClientRect();
-        const cx = rect.left + rect.width * 0.5 - state.width * 0.5;
-        const cy = state.height * 0.5 - (rect.top + rect.height * 0.56);
-        const jump = runnerElement.classList.contains('jumping');
-        carRig.position.set(cx + 2, cy - 2, 40);
-        carRig.rotation.y = Math.sin(elapsed * 0.9) * 0.04;
-        carRig.rotation.x = -0.08 + Math.sin(elapsed * 2.3) * 0.01 + (jump ? -0.08 : 0);
-        carRig.rotation.z = Math.sin(elapsed * 4.6) * 0.008 + (jump ? -0.03 : 0);
-        carRig.userData.body.material.emissiveIntensity = 0.3 + state.night * 0.58 + state.dusk * 0.18;
-        carRig.userData.cabin.material.emissiveIntensity = 0.4 + state.night * 0.8;
-        carRig.userData.underGlow.material.opacity = 0.28 + state.night * 0.42 + state.dusk * 0.1;
-        carRig.userData.headLight.material.opacity = 0.18 + state.night * 0.64 + state.dusk * 0.18;
-        carRig.userData.tailLight.material.opacity = 0.28 + state.night * 0.3;
-        carRig.userData.accent.material.opacity = 0.18 + state.night * 0.22;
-        const wheelSpin = elapsed * 10.5;
-        carRig.userData.wheelGroup.children.forEach((wheel, idx) => {
-            wheel.rotation.x = idx % 2 === 0 ? wheelSpin : wheelSpin + 0.1;
+        const x = rect.left + rect.width * 0.5 - state.width * 0.5;
+        const y = state.height * 0.5 - (rect.top + rect.height * 0.62);
+        const jumping = runnerElement.classList.contains("jumping");
+        carRoot.position.set(x, y, 80);
+        const bob = Math.sin(elapsed * 6.0) * 0.015;
+        runtime.car.rotation.x = 0.22 + (jumping ? -0.10 : 0) + bob;
+        runtime.car.rotation.y = -0.46 + Math.sin(elapsed * 1.3) * 0.03;
+        runtime.car.rotation.z = 0.02 + (jumping ? -0.045 : 0) + Math.sin(elapsed * 2.2) * 0.006;
+        const wheelSpin = elapsed * 12.5;
+        runtime.wheels.forEach((wheel) => {
+            wheel.rotation.z = wheelSpin;
         });
+        const cityActivation = Math.max(clamp((state.dusk - 0.1) / 0.55, 0, 1) * 0.55, smooth(clamp((state.night - 0.35) / 0.65, 0, 1)));
+        runtime.groundGlow.material.opacity = 0.18 + cityActivation * 0.34;
+        runtime.headLights.forEach((light) => (light.material.opacity = 0.10 + cityActivation * 0.48));
+        runtime.tailLights.forEach((light) => (light.material.opacity = 0.16 + cityActivation * 0.24));
     }
 
-    function clamp(v, min, max) {
-        return Math.min(Math.max(v, min), max);
-    }
-
-    function smooth(t) {
-        return t * t * (3 - 2 * t);
-    }
-
-    function rand(min, max) {
-        return min + Math.random() * (max - min);
-    }
+    addCityClusters();
+    addRain(rainBackGroup, 150, false);
+    addRain(rainFrontGroup, 56, true);
+    createCar();
+    resize();
 
     function animate(now) {
-        const t = now * 0.001;
-        state.time = t;
-        readCssPhase();
-        updateCityLights(t);
+        state.time = now * 0.001;
+        readPhase();
+        updateCity(state.time);
         updateRain();
-        updateCar(t);
+        updateCar(state.time);
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
     }
 
-    window.addEventListener('resize', resize, { passive: true });
-    resize();
+    window.addEventListener("resize", resize, { passive: true });
     requestAnimationFrame(animate);
 })();
