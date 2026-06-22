@@ -69,7 +69,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     const roadGroup = new THREE.Group();
     const rainBackGroup = new THREE.Group();
     const rainFrontGroup = new THREE.Group();
-    overlayGroup.add(cityGroup, bloomGroup, roadGroup, rainBackGroup, rainFrontGroup);
+    const rainNearGroup = new THREE.Group();
+    overlayGroup.add(cityGroup, bloomGroup, roadGroup, rainBackGroup, rainFrontGroup, rainNearGroup);
 
     const carAnchor = new THREE.Group();
     overlayGroup.add(carAnchor);
@@ -83,6 +84,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         roadBars: [],
         rainBack: [],
         rainFront: [],
+        rainNear: [],
         carEntries: [],
         activeCar: null,
         carUnderGlow: null,
@@ -236,28 +238,36 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         }
     }
 
-    function buildRainLayer(group, count, front = false) {
+    function buildRainLayer(group, count, layerType = "back") {
+        const isFront = layerType === "front";
+        const isNear = layerType === "near";
+
         for (let i = 0; i < count; i += 1) {
             const drop = new THREE.Mesh(
-                new THREE.PlaneGeometry(front ? rand(4, 7) : rand(2.4, 4.2), front ? rand(70, 118) : rand(40, 74)),
+                new THREE.PlaneGeometry(
+                    isNear ? rand(6.5, 10.5) : isFront ? rand(4, 7) : rand(2.4, 4.2),
+                    isNear ? rand(96, 158) : isFront ? rand(70, 118) : rand(40, 74)
+                ),
                 new THREE.MeshBasicMaterial({
                     map: tex.rain,
-                    color: front ? 0xf1f7ff : 0xb8d5ff,
+                    color: isNear ? 0xf7fbff : isFront ? 0xf1f7ff : 0xb8d5ff,
                     transparent: true,
                     opacity: 0,
                     depthWrite: false,
                     blending: THREE.AdditiveBlending
                 })
             );
-            drop.rotation.z = -0.38;
+            drop.rotation.z = isNear ? -0.44 : -0.38;
             drop.userData = {
                 nx: Math.random(),
                 ny: Math.random(),
-                speed: front ? rand(0.95, 1.45) : rand(0.52, 1.02),
-                alpha: front ? rand(0.10, 0.22) : rand(0.10, 0.24)
+                speed: isNear ? rand(1.18, 1.68) : isFront ? rand(0.95, 1.45) : rand(0.52, 1.02),
+                alpha: isNear ? rand(0.07, 0.14) : isFront ? rand(0.10, 0.22) : rand(0.10, 0.24),
+                twinkle: rand(0, Math.PI * 2),
+                depth: layerType
             };
             group.add(drop);
-            (front ? runtime.rainFront : runtime.rainBack).push(drop);
+            (isNear ? runtime.rainNear : isFront ? runtime.rainFront : runtime.rainBack).push(drop);
         }
     }
 
@@ -418,29 +428,65 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
     function updateRain() {
         const rainActivation = state.night;
+        const wind = 0.82 + Math.sin(state.time * 0.52) * 0.24 + Math.cos(state.time * 0.19) * 0.10;
+
         rainBackGroup.visible = rainActivation > 0.02;
         rainFrontGroup.visible = rainActivation > 0.02;
-        runtime.rainBack.forEach((drop) => {
-            drop.userData.ny += drop.userData.speed * 0.0066;
-            drop.userData.nx += drop.userData.speed * 0.0015;
-            if (drop.userData.ny > 1.1 || drop.userData.nx > 1.08) {
-                drop.userData.ny = -0.10;
-                drop.userData.nx = rand(-0.08, 1);
-            }
-            const p = norm(drop.userData.nx, drop.userData.ny, 120);
-            drop.position.set(p.x, p.y, 120);
-            drop.material.opacity = drop.userData.alpha * rainActivation;
+        rainNearGroup.visible = rainActivation > 0.02;
+
+        const updateLayer = (drops, options) => {
+            drops.forEach((drop, idx) => {
+                drop.userData.ny += drop.userData.speed * options.fallSpeed;
+                drop.userData.nx += drop.userData.speed * options.driftSpeed * wind;
+                if (drop.userData.ny > options.resetY || drop.userData.nx > options.resetX) {
+                    drop.userData.ny = options.spawnY;
+                    drop.userData.nx = rand(options.spawnXMin, 1);
+                }
+
+                const p = norm(drop.userData.nx, drop.userData.ny, options.z);
+                drop.position.set(p.x, p.y, options.z);
+                drop.rotation.z = options.rotationBase - wind * options.rotationSwing;
+                drop.material.opacity = drop.userData.alpha * rainActivation * 0.58 * (0.84 + 0.16 * Math.sin(state.time * options.pulseSpeed + drop.userData.twinkle + idx * 0.06));
+            });
+        };
+
+        updateLayer(runtime.rainBack, {
+            z: 120,
+            fallSpeed: 0.0069,
+            driftSpeed: 0.00155,
+            resetY: 1.10,
+            resetX: 1.08,
+            spawnY: -0.10,
+            spawnXMin: -0.08,
+            rotationBase: -0.36,
+            rotationSwing: 0.08,
+            pulseSpeed: 1.6
         });
-        runtime.rainFront.forEach((drop) => {
-            drop.userData.ny += drop.userData.speed * 0.0094;
-            drop.userData.nx += drop.userData.speed * 0.0021;
-            if (drop.userData.ny > 1.15 || drop.userData.nx > 1.10) {
-                drop.userData.ny = -0.15;
-                drop.userData.nx = rand(-0.10, 1);
-            }
-            const p = norm(drop.userData.nx, drop.userData.ny, 180);
-            drop.position.set(p.x, p.y, 180);
-            drop.material.opacity = drop.userData.alpha * rainActivation;
+
+        updateLayer(runtime.rainFront, {
+            z: 180,
+            fallSpeed: 0.0098,
+            driftSpeed: 0.00225,
+            resetY: 1.16,
+            resetX: 1.10,
+            spawnY: -0.16,
+            spawnXMin: -0.10,
+            rotationBase: -0.40,
+            rotationSwing: 0.10,
+            pulseSpeed: 1.9
+        });
+
+        updateLayer(runtime.rainNear, {
+            z: 235,
+            fallSpeed: 0.0126,
+            driftSpeed: 0.0029,
+            resetY: 1.18,
+            resetX: 1.12,
+            spawnY: -0.18,
+            spawnXMin: -0.14,
+            rotationBase: -0.46,
+            rotationSwing: 0.12,
+            pulseSpeed: 2.2
         });
     }
 
@@ -470,8 +516,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     buildCityLights();
-    buildRainLayer(rainBackGroup, 120, false);
-    buildRainLayer(rainFrontGroup, 42, true);
+    buildRainLayer(rainBackGroup, 144, "back");
+    buildRainLayer(rainFrontGroup, 56, "front");
+    buildRainLayer(rainNearGroup, 22, "near");
     buildCarLights();
     loadCarModels();
     bindCarSwitch();

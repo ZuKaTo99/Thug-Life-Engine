@@ -29,6 +29,10 @@
     const totalCoinsLabel = document.getElementById('totalCoins');
     const recordCoinsLabel = document.getElementById('recordCoins');
     const phaseSwitch = document.getElementById('phaseSwitch');
+    const skyCloudVideo = document.getElementById('skyCloudVideo');
+    const rainOverlayVideo = document.getElementById('rainOverlayVideo');
+    const lightningFrontVideo = document.getElementById('lightningFrontVideo');
+    const lightningVideoLayer = document.querySelector('.lightning-video-layer');
 
     const phase = {
         night: 0,
@@ -63,6 +67,11 @@
         height: 0,
         dpr: 1,
         items: []
+    };
+
+    const videoFx = {
+        nextLightningAt: performance.now() + randomRange(18000, 34000),
+        lightningActiveUntil: 0
     };
 
     const game = {
@@ -171,18 +180,52 @@
     }
 
     function createClouds() {
+        const layerConfigs = [
+            {
+                yMin: 0.06,
+                yMax: 0.24,
+                width: [280, 470],
+                height: [72, 118],
+                speed: [3.2, 5.8],
+                alpha: [0.12, 0.22],
+                blur: [20, 28],
+                scale: [0.95, 1.28]
+            },
+            {
+                yMin: 0.12,
+                yMax: 0.34,
+                width: [220, 360],
+                height: [56, 92],
+                speed: [5.6, 8.8],
+                alpha: [0.15, 0.28],
+                blur: [13, 20],
+                scale: [0.82, 1.08]
+            },
+            {
+                yMin: 0.18,
+                yMax: 0.52,
+                width: [150, 250],
+                height: [36, 62],
+                speed: [8.4, 13.5],
+                alpha: [0.10, 0.19],
+                blur: [8, 14],
+                scale: [0.68, 0.92]
+            }
+        ];
+
         clouds.items = Array.from({ length: CONFIG.cloudCount }, (_, index) => {
-            const scale = randomRange(0.7, 1.18);
+            const layer = layerConfigs[index % layerConfigs.length];
+            const scale = randomRange(layer.scale[0], layer.scale[1]);
             return {
-                x: randomRange(-180, clouds.width + 120),
-                y: randomRange(18, Math.max(26, clouds.height * 0.62)),
-                width: randomRange(150, 300) * scale,
-                height: randomRange(34, 72) * scale,
-                speed: randomRange(8, 20),
-                alpha: randomRange(0.28, 0.52),
-                blur: randomRange(10, 18),
+                x: randomRange(-260, clouds.width + 180),
+                y: randomRange(clouds.height * layer.yMin, clouds.height * layer.yMax),
+                width: randomRange(layer.width[0], layer.width[1]) * scale,
+                height: randomRange(layer.height[0], layer.height[1]) * scale,
+                speed: randomRange(layer.speed[0], layer.speed[1]),
+                alpha: randomRange(layer.alpha[0], layer.alpha[1]),
+                blur: randomRange(layer.blur[0], layer.blur[1]),
                 seed: randomRange(0, Math.PI * 2),
-                layer: index % 3
+                layer: index % layerConfigs.length
             };
         });
     }
@@ -312,37 +355,48 @@
 
     function drawCloudLayer(deltaSeconds, elapsedSeconds) {
         cloudCtx.clearRect(0, 0, clouds.width, clouds.height);
-        const nightTint = phase.night * 0.32;
+        const dayPresence = clamp(1 - (phase.night * 1.25), 0, 1);
+        if (dayPresence <= 0.01) return;
 
         for (const cloud of clouds.items) {
+            const layerDepth = cloud.layer / 2;
             cloud.x += cloud.speed * deltaSeconds;
-            if (cloud.x - cloud.width > clouds.width + 120) {
-                cloud.x = -cloud.width - 120;
-                cloud.y = randomRange(18, Math.max(26, clouds.height * 0.62));
+            if (cloud.x - cloud.width > clouds.width + 180) {
+                cloud.x = -cloud.width - 180;
+                const yBands = [
+                    [0.06, 0.24],
+                    [0.12, 0.34],
+                    [0.18, 0.52]
+                ];
+                const [minBand, maxBand] = yBands[cloud.layer] || yBands[1];
+                cloud.y = randomRange(clouds.height * minBand, clouds.height * maxBand);
             }
 
-            const drift = Math.sin(elapsedSeconds * 0.15 + cloud.seed) * 3;
-            const puffAlpha = cloud.alpha * (0.84 + phase.dusk * 0.14 - phase.night * 0.05);
-            const shade = 247 - Math.round(nightTint * 46);
-            const warm = 238 - Math.round(phase.night * 28);
-            const cool = 230 - Math.round(phase.night * 8);
+            const drift = Math.sin(elapsedSeconds * (0.12 + layerDepth * 0.04) + cloud.seed) * (3.5 + layerDepth * 2.4);
+            const sway = Math.cos(elapsedSeconds * (0.06 + layerDepth * 0.02) + cloud.seed * 0.7) * (8 + layerDepth * 6);
+            const puffAlpha = cloud.alpha * dayPresence;
+            const baseR = 247 - Math.round(layerDepth * 18);
+            const baseG = 239 - Math.round(layerDepth * 14);
+            const baseB = 232 - Math.round(layerDepth * 8);
 
             cloudCtx.save();
-            cloudCtx.translate(cloud.x, cloud.y + drift);
+            cloudCtx.translate(cloud.x + sway, cloud.y + drift);
             cloudCtx.filter = `blur(${cloud.blur}px)`;
             cloudCtx.globalAlpha = puffAlpha;
 
-            const grad = cloudCtx.createLinearGradient(0, -cloud.height * 0.6, 0, cloud.height * 0.8);
-            grad.addColorStop(0, `rgba(${shade}, ${warm}, ${cool}, 0.92)`);
-            grad.addColorStop(1, `rgba(${shade - 10}, ${warm - 12}, ${cool - 14}, 0.54)`);
+            const grad = cloudCtx.createLinearGradient(0, -cloud.height * 0.75, 0, cloud.height * 0.9);
+            grad.addColorStop(0, `rgba(${baseR + 6}, ${baseG + 4}, ${baseB + 2}, 0.96)`);
+            grad.addColorStop(0.58, `rgba(${baseR}, ${baseG}, ${baseB}, 0.72)`);
+            grad.addColorStop(1, `rgba(${baseR - 12}, ${baseG - 14}, ${baseB - 12}, 0.40)`);
             cloudCtx.fillStyle = grad;
 
             const puffs = [
-                [-cloud.width * 0.26, cloud.height * 0.1, cloud.width * 0.26, cloud.height * 0.26],
-                [-cloud.width * 0.05, -cloud.height * 0.06, cloud.width * 0.34, cloud.height * 0.34],
-                [cloud.width * 0.22, cloud.height * 0.06, cloud.width * 0.29, cloud.height * 0.29],
-                [cloud.width * 0.38, cloud.height * 0.12, cloud.width * 0.2, cloud.height * 0.18],
-                [-cloud.width * 0.4, cloud.height * 0.14, cloud.width * 0.18, cloud.height * 0.16]
+                [-cloud.width * 0.44, cloud.height * 0.15, cloud.width * 0.18, cloud.height * 0.15],
+                [-cloud.width * 0.28, cloud.height * 0.08, cloud.width * 0.24, cloud.height * 0.20],
+                [-cloud.width * 0.05, -cloud.height * 0.08, cloud.width * 0.30, cloud.height * 0.28],
+                [cloud.width * 0.20, cloud.height * 0.04, cloud.width * 0.28, cloud.height * 0.25],
+                [cloud.width * 0.42, cloud.height * 0.14, cloud.width * 0.18, cloud.height * 0.16],
+                [cloud.width * 0.05, cloud.height * 0.20, cloud.width * 0.48, cloud.height * 0.18]
             ];
 
             for (const [px, py, rx, ry] of puffs) {
@@ -352,11 +406,76 @@
             }
 
             cloudCtx.globalAlpha = puffAlpha * 0.22;
-            cloudCtx.fillStyle = 'rgba(255, 255, 255, 1)';
+            cloudCtx.fillStyle = 'rgba(255, 248, 235, 1)';
             cloudCtx.beginPath();
-            cloudCtx.ellipse(0, -cloud.height * 0.08, cloud.width * 0.28, cloud.height * 0.14, 0, 0, Math.PI * 2);
+            cloudCtx.ellipse(-cloud.width * 0.04, -cloud.height * 0.10, cloud.width * 0.26, cloud.height * 0.12, -0.04, 0, Math.PI * 2);
+            cloudCtx.fill();
+
+            cloudCtx.globalAlpha = puffAlpha * 0.13;
+            cloudCtx.fillStyle = 'rgba(255, 210, 162, 1)';
+            cloudCtx.beginPath();
+            cloudCtx.ellipse(cloud.width * 0.16, cloud.height * 0.08, cloud.width * 0.32, cloud.height * 0.10, 0.03, 0, Math.PI * 2);
             cloudCtx.fill();
             cloudCtx.restore();
+        }
+    }
+
+    function startVideo(video) {
+        if (!video) return;
+        video.muted = true;
+        video.playsInline = true;
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {
+                // Wallpaper Engine/browser may delay autoplay until the page is ready.
+            });
+        }
+    }
+
+    function startVideoLayers() {
+        startVideo(skyCloudVideo);
+        startVideo(rainOverlayVideo);
+
+        if (lightningFrontVideo) {
+            lightningFrontVideo.pause();
+            lightningFrontVideo.currentTime = 0;
+        }
+    }
+
+    function triggerLightning(now) {
+        if (!lightningFrontVideo || !lightningVideoLayer || phase.night < 0.5) return;
+
+        lightningVideoLayer.classList.add('is-active');
+        lightningFrontVideo.currentTime = 0;
+        startVideo(lightningFrontVideo);
+
+        videoFx.lightningActiveUntil = now + 950;
+        videoFx.nextLightningAt = now + randomRange(24000, 52000);
+    }
+
+    function updateVideoEffects(now) {
+        if (!lightningVideoLayer) return;
+
+        if (phase.night < 0.5) {
+            lightningVideoLayer.classList.remove('is-active');
+            videoFx.nextLightningAt = now + randomRange(18000, 34000);
+            videoFx.lightningActiveUntil = 0;
+            if (lightningFrontVideo && !lightningFrontVideo.paused) {
+                lightningFrontVideo.pause();
+            }
+            return;
+        }
+
+        if (now >= videoFx.nextLightningAt) {
+            triggerLightning(now);
+        }
+
+        if (videoFx.lightningActiveUntil > 0 && now >= videoFx.lightningActiveUntil) {
+            lightningVideoLayer.classList.remove('is-active');
+            videoFx.lightningActiveUntil = 0;
+            if (lightningFrontVideo && !lightningFrontVideo.paused) {
+                lightningFrontVideo.pause();
+            }
         }
     }
 
@@ -519,8 +638,8 @@
         game.lastTime = now;
 
         updateDayNightCycle();
-        // Clouds are disabled because the Three.js layer now handles the upper atmosphere.
-        // drawCloudLayer(deltaSeconds, now / 1000);
+        updateVideoEffects(now);
+        drawCloudLayer(deltaSeconds, now / 1000);
         drawAtmosphere(deltaSeconds, now / 1000);
         updateMiniGame(deltaSeconds);
 
@@ -567,5 +686,6 @@
     loadStats();
     resizeCanvas();
     bindEvents();
+    startVideoLayers();
     requestAnimationFrame(animate);
 })();

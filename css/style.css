@@ -44,6 +44,7 @@ button {
 
 .scene-backdrop,
 .scene-image,
+.video-fx-layer,
 .atmosphere-canvas,
 .cloud-canvas,
 .sky-wash,
@@ -115,6 +116,62 @@ button {
 
 .cloud-canvas {
     display: none;
+}
+
+.video-fx-layer {
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.fx-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    user-select: none;
+}
+
+.sky-video-layer {
+    z-index: 2;
+    top: 0;
+    bottom: auto;
+    height: 62vh;
+    opacity: calc((1 - var(--night)) * 0.38);
+    mix-blend-mode: soft-light;
+    filter: saturate(1.08) contrast(1.03) brightness(1.04);
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.74) 52%, rgba(0, 0, 0, 0.18) 86%, transparent 100%);
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.74) 52%, rgba(0, 0, 0, 0.18) 86%, transparent 100%);
+}
+
+.sky-cloud-video {
+    object-position: center top;
+}
+
+.rain-video-layer {
+    z-index: 17;
+    opacity: calc(var(--night) * 0.23);
+    mix-blend-mode: screen;
+    filter: contrast(1.18) brightness(0.92) saturate(0.75);
+}
+
+.rain-overlay-video {
+    object-position: center center;
+}
+
+.lightning-video-layer {
+    z-index: 22;
+    opacity: 0;
+    mix-blend-mode: screen;
+    filter: contrast(1.16) brightness(1.08) saturate(0.84);
+    transition: opacity 140ms ease-out;
+}
+
+.lightning-video-layer.is-active {
+    opacity: calc(var(--night) * 0.32);
+}
+
+.lightning-front-video {
+    object-position: center center;
 }
 
 .three-layer {
@@ -324,23 +381,48 @@ button {
 
 .rain-glass-layer {
     z-index: 18;
+    overflow: hidden;
+    mix-blend-mode: screen;
+    opacity: calc(var(--night) * 0.10);
+    filter: blur(0.12px);
+    transform: translate3d(0, 0, 0);
+}
+
+.rain-glass-layer::before,
+.rain-glass-layer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: repeat;
+}
+
+.rain-glass-layer::before {
     background-image:
         url("../assets/effects/lens_drops_soft.png"),
         url("../assets/effects/rain_streak_soft.png");
     background-size:
-        46vw 46vw,
-        34vw 68vw;
+        44vw 44vw,
+        32vw 64vw;
     background-position:
-        18% 22%,
+        20% 16%,
         0 0;
-    background-repeat:
-        repeat,
-        repeat;
-    mix-blend-mode: screen;
-    opacity: calc(var(--night) * 0.16);
-    filter: blur(0.12px);
-    transform: translate3d(0, 0, 0);
-    animation: rain-glass-slide 1.8s linear infinite;
+    opacity: 0.92;
+    animation: rain-glass-slide 1.65s linear infinite;
+}
+
+.rain-glass-layer::after {
+    background-image:
+        url("../assets/effects/rain_streak_soft.png"),
+        url("../assets/effects/lens_drops_soft.png");
+    background-size:
+        24vw 54vw,
+        58vw 58vw;
+    background-position:
+        0 0,
+        82% 10%;
+    opacity: 0.42;
+    animation: rain-glass-slide-front 1.15s linear infinite;
 }
 
 .light-leak {
@@ -816,8 +898,13 @@ button {
 }
 
 @keyframes rain-glass-slide {
-    from { background-position: 18% 22%, 0 -20vh; }
-    to { background-position: 18% 22%, -7vw 48vh; }
+    from { transform: translate3d(0, -2vh, 0); }
+    to { transform: translate3d(2.4vw, 13vh, 0); }
+}
+
+@keyframes rain-glass-slide-front {
+    from { transform: translate3d(0, -6vh, 0); }
+    to { transform: translate3d(3.2vw, 18vh, 0); }
 }
 
 @media (min-aspect-ratio: 16/9) {
@@ -859,7 +946,9 @@ button {
     .vinewood-glow,
     .eye-glow,
     .wet-reflection-layer,
-    .rain-glass-layer {
+    .rain-glass-layer,
+    .rain-glass-layer::before,
+    .rain-glass-layer::after {
         animation-duration: 1ms !important;
         animation-iteration-count: 1 !important;
     }

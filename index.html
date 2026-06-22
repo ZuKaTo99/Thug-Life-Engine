@@ -34,6 +34,43 @@
     draggable="false"
 />
 
+        <div class="video-fx-layer sky-video-layer" aria-hidden="true">
+            <video
+                class="fx-video sky-cloud-video"
+                id="skyCloudVideo"
+                src="assets/video/sky_day_clouds.mp4"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="auto"
+            ></video>
+        </div>
+
+        <div class="video-fx-layer rain-video-layer" aria-hidden="true">
+            <video
+                class="fx-video rain-overlay-video"
+                id="rainOverlayVideo"
+                src="assets/video/rain_night_overlay.mp4"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="auto"
+            ></video>
+        </div>
+
+        <div class="video-fx-layer lightning-video-layer" aria-hidden="true">
+            <video
+                class="fx-video lightning-front-video"
+                id="lightningFrontVideo"
+                src="assets/video/lightning_front.mp4"
+                muted
+                playsinline
+                preload="auto"
+            ></video>
+        </div>
+
         <canvas class="three-layer" id="threeCanvas" aria-hidden="true"></canvas>
         <canvas class="cloud-canvas" id="cloudCanvas" aria-hidden="true"></canvas>
         <canvas class="atmosphere-canvas" id="atmosphereCanvas" aria-hidden="true"></canvas>
