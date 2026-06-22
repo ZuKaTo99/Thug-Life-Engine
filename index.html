@@ -34,19 +34,6 @@
     draggable="false"
 />
 
-        <div class="video-fx-layer sky-video-layer" aria-hidden="true">
-            <video
-                class="fx-video sky-cloud-video"
-                id="skyCloudVideo"
-                src="assets/video/sky_day_clouds.mp4"
-                autoplay
-                muted
-                loop
-                playsinline
-                preload="auto"
-            ></video>
-        </div>
-
         <div class="video-fx-layer rain-video-layer" aria-hidden="true">
             <video
                 class="fx-video rain-overlay-video"
@@ -95,6 +82,20 @@
         <div class="light-leak light-leak-one" aria-hidden="true"></div>
         <div class="light-leak light-leak-two" aria-hidden="true"></div>
         <div class="cinematic-vignette" aria-hidden="true"></div>
+
+        <section class="wall-clock" id="wallClock" aria-label="Uhr mit Wochentag und Datum">
+            <div class="wall-clock-inner">
+                <div class="clock-row clock-row-top">
+                    <span class="clock-weekday" id="clockWeekday">Montag</span>
+                    <span class="clock-date" id="clockDate">23. Juni 2026</span>
+                </div>
+                <div class="clock-row clock-row-main">
+                    <span class="clock-time" id="clockTime">01:01</span>
+                    <span class="clock-seconds" id="clockSeconds">00</span>
+                </div>
+            </div>
+        </section>
+
 
         <section class="mini-runner" id="miniRunner" aria-label="Kleines Münzspiel">
             <div class="mini-hud" aria-live="polite">

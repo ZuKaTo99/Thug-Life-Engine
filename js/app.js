@@ -29,7 +29,11 @@
     const totalCoinsLabel = document.getElementById('totalCoins');
     const recordCoinsLabel = document.getElementById('recordCoins');
     const phaseSwitch = document.getElementById('phaseSwitch');
-    const skyCloudVideo = document.getElementById('skyCloudVideo');
+    const clockWeekday = document.getElementById('clockWeekday');
+    const clockDate = document.getElementById('clockDate');
+    const clockTime = document.getElementById('clockTime');
+    const clockSeconds = document.getElementById('clockSeconds');
+    const skyCloudVideos = Array.from(document.querySelectorAll('.sky-cloud-video'));
     const rainOverlayVideo = document.getElementById('rainOverlayVideo');
     const lightningFrontVideo = document.getElementById('lightningFrontVideo');
     const lightningVideoLayer = document.querySelector('.lightning-video-layer');
@@ -433,7 +437,16 @@
     }
 
     function startVideoLayers() {
-        startVideo(skyCloudVideo);
+        skyCloudVideos.forEach((video, index) => {
+            if (!video) return;
+            try {
+                video.currentTime = index === 0 ? 0.10 : index === 1 ? 0.85 : 1.35;
+            } catch {
+                // Some browsers may block setting currentTime before metadata is ready.
+            }
+            startVideo(video);
+        });
+
         startVideo(rainOverlayVideo);
 
         if (lightningFrontVideo) {
@@ -497,6 +510,37 @@
             totalCoins: game.totalCoins,
             recordCoins: game.recordCoins
         }));
+    }
+
+    function updateClock() {
+        const now = new Date();
+
+        if (clockWeekday) {
+            const weekday = new Intl.DateTimeFormat('de-DE', { weekday: 'long' }).format(now);
+            clockWeekday.textContent = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+        }
+
+        if (clockDate) {
+            clockDate.textContent = new Intl.DateTimeFormat('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }).format(now);
+        }
+
+        if (clockTime) {
+            clockTime.textContent = new Intl.DateTimeFormat('de-DE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).format(now);
+        }
+
+        if (clockSeconds) {
+            clockSeconds.textContent = new Intl.DateTimeFormat('de-DE', {
+                second: '2-digit'
+            }).format(now);
+        }
     }
 
     function updateHud() {
@@ -687,5 +731,7 @@
     resizeCanvas();
     bindEvents();
     startVideoLayers();
+    updateClock();
+    setInterval(updateClock, 1000);
     requestAnimationFrame(animate);
 })();
