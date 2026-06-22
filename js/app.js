@@ -37,9 +37,7 @@
 
     const phasePresets = [
         { label: 'Tag', t: 0.0 },
-        { label: 'Abend', t: 0.24 },
-        { label: 'Nacht', t: 0.5 },
-        { label: 'Morgen', t: 0.86 }
+        { label: 'Nacht', t: 0.5 }
     ];
 
     let cycleStartMs = Number.parseFloat(localStorage.getItem(CONFIG.cycleStartStorageKey) || '');
@@ -166,45 +164,42 @@
         });
     }
 
-    function updateDayNightCycle() {
+    function getCycleProgress() {
         const cycleMs = CONFIG.dayNightCycleMinutes * 60 * 1000;
         const elapsedMs = Date.now() - cycleStartMs;
-        const t = ((elapsedMs % cycleMs) + cycleMs) % cycleMs / cycleMs;
-        const wave = (1 - Math.cos(t * Math.PI * 2)) / 2;
-        const duskA = smoothstep(0.12, 0.25, t) * (1 - smoothstep(0.25, 0.38, t));
-        const duskB = smoothstep(0.62, 0.75, t) * (1 - smoothstep(0.75, 0.88, t));
+        return (((elapsedMs % cycleMs) + cycleMs) % cycleMs) / cycleMs;
+    }
 
-        phase.night = clamp(wave, 0, 1);
-        phase.dusk = clamp(Math.max(duskA, duskB), 0, 1);
-        phase.warm = clamp(1 - phase.night * 0.76 + phase.dusk * 0.2, 0, 1);
+    function updateDayNightCycle() {
+        const t = getCycleProgress();
+        const isNightPhase = t >= 0.5;
+
+        phase.night = isNightPhase ? 1 : 0;
+        phase.dusk = 0;
+        phase.warm = isNightPhase ? 0.12 : 1;
 
         root.style.setProperty('--night', phase.night.toFixed(3));
         root.style.setProperty('--dusk', phase.dusk.toFixed(3));
         root.style.setProperty('--warm', phase.warm.toFixed(3));
         root.style.setProperty('--star-alpha', phase.night.toFixed(3));
+        root.dataset.phase = isNightPhase ? 'night' : 'day';
 
-        updatePhaseSwitchLabel(t);
+        updatePhaseSwitchLabel(isNightPhase);
     }
 
-    function getCurrentPhaseLabel(t) {
-        if (phase.night > 0.74) return 'Nacht';
-        if (phase.dusk > 0.25 && t < 0.5) return 'Abend';
-        if (phase.dusk > 0.25) return 'Morgen';
-        return phase.night > 0.32 ? 'Übergang' : 'Tag';
+    function getCurrentPhaseLabel(isNightPhase) {
+        return isNightPhase ? 'Nacht' : 'Tag';
     }
 
-    function updatePhaseSwitchLabel(t) {
+    function updatePhaseSwitchLabel(isNightPhase) {
         if (!phaseSwitch) return;
-        const minutes = Math.floor(CONFIG.dayNightCycleMinutes * (((Date.now() - cycleStartMs) / (CONFIG.dayNightCycleMinutes * 60 * 1000)) % 1));
-        phaseSwitch.textContent = `Zeit: ${getCurrentPhaseLabel(t)} ${minutes}m`;
+        phaseSwitch.textContent = `Zeit: ${getCurrentPhaseLabel(isNightPhase)} ${isNightPhase ? '10M' : '0M'}`;
     }
 
     function switchPhase() {
         const cycleMs = CONFIG.dayNightCycleMinutes * 60 * 1000;
-        const currentT = (((Date.now() - cycleStartMs) % cycleMs) + cycleMs) % cycleMs / cycleMs;
-        let nextIndex = phasePresets.findIndex((preset) => Math.abs(preset.t - currentT) < 0.08);
-        nextIndex = (nextIndex + 1) % phasePresets.length;
-        const nextPreset = phasePresets[nextIndex];
+        const isNightPhase = getCycleProgress() >= 0.5;
+        const nextPreset = isNightPhase ? phasePresets[0] : phasePresets[1];
         cycleStartMs = Date.now() - nextPreset.t * cycleMs;
         localStorage.setItem(CONFIG.cycleStartStorageKey, String(cycleStartMs));
         updateDayNightCycle();

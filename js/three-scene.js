@@ -253,8 +253,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             drop.userData = {
                 nx: Math.random(),
                 ny: Math.random(),
-                speed: front ? rand(0.85, 1.35) : rand(0.42, 0.95),
-                alpha: front ? rand(0.08, 0.20) : rand(0.08, 0.22)
+                speed: front ? rand(0.95, 1.45) : rand(0.52, 1.02),
+                alpha: front ? rand(0.10, 0.22) : rand(0.10, 0.24)
             };
             group.add(drop);
             (front ? runtime.rainFront : runtime.rainBack).push(drop);
@@ -398,33 +398,31 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function updateCity(elapsed) {
-        const duskActivation = clamp((state.dusk - 0.12) / 0.5, 0, 1);
-        const nightActivation = smooth(clamp((state.night - 0.38) / 0.62, 0, 1));
-        const cityActivation = Math.max(duskActivation * 0.52, nightActivation);
+        const cityActivation = state.night;
 
         runtime.cityLights.forEach((sprite, idx) => {
-            const twinkle = 0.78 + Math.sin(elapsed * sprite.userData.speed + sprite.userData.twinkle + idx) * 0.22;
-            sprite.material.opacity = sprite.userData.baseOpacity * cityActivation * twinkle;
+            const twinkle = 0.82 + Math.sin(elapsed * sprite.userData.speed + sprite.userData.twinkle + idx) * 0.18;
+            sprite.material.opacity = sprite.userData.baseOpacity * cityActivation * 0.42 * twinkle;
         });
         runtime.blooms.forEach((sprite, idx) => {
-            const pulse = 0.84 + Math.sin(elapsed * sprite.userData.speed + sprite.userData.twinkle + idx) * 0.16;
-            sprite.material.opacity = sprite.userData.baseOpacity * cityActivation * pulse;
+            const pulse = 0.86 + Math.sin(elapsed * sprite.userData.speed + sprite.userData.twinkle + idx) * 0.14;
+            sprite.material.opacity = sprite.userData.baseOpacity * cityActivation * 0.55 * pulse;
         });
         runtime.roadBars.forEach((bar, idx) => {
             const base = norm(bar.userData.nx, bar.userData.ny, -20);
             const drift = Math.sin(elapsed * bar.userData.speed + bar.userData.phase) * 22;
             bar.position.set(base.x + drift, base.y, -20);
-            bar.material.opacity = cityActivation * (0.05 + (0.08 * (0.5 + 0.5 * Math.sin(elapsed + idx))));
+            bar.material.opacity = cityActivation * (0.03 + (0.05 * (0.5 + 0.5 * Math.sin(elapsed + idx))));
         });
     }
 
     function updateRain() {
-        const rainActivation = smooth(clamp((state.night - 0.78) / 0.22, 0, 1));
+        const rainActivation = state.night;
         rainBackGroup.visible = rainActivation > 0.02;
         rainFrontGroup.visible = rainActivation > 0.02;
         runtime.rainBack.forEach((drop) => {
-            drop.userData.ny += drop.userData.speed * 0.0058;
-            drop.userData.nx += drop.userData.speed * 0.0013;
+            drop.userData.ny += drop.userData.speed * 0.0066;
+            drop.userData.nx += drop.userData.speed * 0.0015;
             if (drop.userData.ny > 1.1 || drop.userData.nx > 1.08) {
                 drop.userData.ny = -0.10;
                 drop.userData.nx = rand(-0.08, 1);
@@ -434,8 +432,8 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
             drop.material.opacity = drop.userData.alpha * rainActivation;
         });
         runtime.rainFront.forEach((drop) => {
-            drop.userData.ny += drop.userData.speed * 0.0082;
-            drop.userData.nx += drop.userData.speed * 0.0018;
+            drop.userData.ny += drop.userData.speed * 0.0094;
+            drop.userData.nx += drop.userData.speed * 0.0021;
             if (drop.userData.ny > 1.15 || drop.userData.nx > 1.10) {
                 drop.userData.ny = -0.15;
                 drop.userData.nx = rand(-0.10, 1);
@@ -456,10 +454,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         carAnchor.rotation.y = -0.38 + Math.sin(elapsed * 1.1) * 0.025;
         carAnchor.rotation.z = (jumping ? -0.04 : 0) + Math.sin(elapsed * 2.0) * 0.004;
 
-        const cityActivation = Math.max(clamp((state.dusk - 0.12) / 0.5, 0, 1) * 0.52, smooth(clamp((state.night - 0.38) / 0.62, 0, 1)));
-        if (runtime.carUnderGlow) runtime.carUnderGlow.material.opacity = 0.18 + cityActivation * 0.36;
-        runtime.headLights.forEach((light) => (light.material.opacity = 0.10 + cityActivation * 0.56));
-        runtime.tailLights.forEach((light) => (light.material.opacity = 0.16 + cityActivation * 0.32));
+        const cityActivation = state.night;
+        if (runtime.carUnderGlow) runtime.carUnderGlow.material.opacity = 0.14 + cityActivation * 0.42;
+        runtime.headLights.forEach((light) => (light.material.opacity = 0.08 + cityActivation * 0.62));
+        runtime.tailLights.forEach((light) => (light.material.opacity = 0.12 + cityActivation * 0.34));
     }
 
     function bindCarSwitch() {

@@ -17,14 +17,22 @@
 </head>
 <body>
     <main class="wallpaper" id="wallpaper" aria-label="Thug Life Engine Wallpaper">
-        <div class="scene-backdrop" aria-hidden="true"></div>
+        
+<div class="scene-backdrop scene-backdrop-day" aria-hidden="true"></div>
+<div class="scene-backdrop scene-backdrop-night" aria-hidden="true"></div>
 
-        <img
-            class="scene-image"
-            src="assets/images/Thug_Life_original_image.jpeg"
-            alt=""
-            draggable="false"
-        />
+<img
+    class="scene-image scene-image-day"
+    src="assets/images/Thug_Life_original_image.jpeg"
+    alt=""
+    draggable="false"
+/>
+<img
+    class="scene-image scene-image-night"
+    src="assets/images/Thug_Life_Night-Version_image.png"
+    alt=""
+    draggable="false"
+/>
 
         <canvas class="three-layer" id="threeCanvas" aria-hidden="true"></canvas>
         <canvas class="cloud-canvas" id="cloudCanvas" aria-hidden="true"></canvas>

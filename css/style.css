@@ -61,15 +61,22 @@ button {
 .scene-backdrop {
     z-index: 0;
     inset: -3%;
-    background-image: url("../assets/images/Thug_Life_original_image.jpeg");
     background-position: center center;
     background-size: cover;
-    filter:
-        blur(18px)
-        brightness(calc(0.98 - (var(--night) * 0.12)))
-        saturate(calc(1.04 - (var(--night) * 0.08)));
     transform: scale(1.06);
-    opacity: 0.42;
+    transition: opacity 1200ms ease, filter 1200ms ease;
+}
+
+.scene-backdrop-day {
+    background-image: url("../assets/images/Thug_Life_original_image.jpeg");
+    filter: blur(18px) brightness(1) saturate(1.04);
+    opacity: calc(0.42 * (1 - var(--night)));
+}
+
+.scene-backdrop-night {
+    background-image: url("../assets/images/Thug_Life_Night-Version_image.png");
+    filter: blur(22px) brightness(0.82) saturate(1.08);
+    opacity: calc(0.64 * var(--night));
 }
 
 .scene-image {
@@ -79,13 +86,25 @@ button {
     object-fit: cover;
     object-position: center center;
     pointer-events: none;
+    transition: opacity 1200ms ease, filter 1200ms ease;
+}
+
+.scene-image-day {
+    opacity: calc(1 - var(--night));
     filter:
-        brightness(calc(1.10 - (var(--night) * 0.32)))
-        contrast(calc(1.03 + (var(--night) * 0.08)))
-        saturate(calc(1.06 - (var(--night) * 0.24)))
-        hue-rotate(calc(var(--night) * -5deg))
+        brightness(1.08)
+        contrast(1.03)
+        saturate(1.04)
         drop-shadow(0 12px 26px rgba(0, 0, 0, 0.12));
-    transition: filter 1000ms linear;
+}
+
+.scene-image-night {
+    opacity: var(--night);
+    filter:
+        brightness(0.96)
+        contrast(1.06)
+        saturate(1.04)
+        drop-shadow(0 16px 40px rgba(0, 0, 0, 0.28));
 }
 
 .cloud-canvas {
@@ -106,29 +125,29 @@ button {
 .atmosphere-canvas {
     z-index: 10;
     mix-blend-mode: screen;
-    opacity: calc(0.04 + (var(--night) * 0.10));
+    opacity: calc(0.02 + (var(--night) * 0.16));
 }
 
 .sky-wash {
     z-index: 3;
     background:
         linear-gradient(180deg,
-            rgba(31, 23, 46, calc(0.10 + (var(--night) * 0.22))) 0%,
-            rgba(14, 9, 22, calc(0.02 + (var(--night) * 0.18))) 40%,
-            rgba(255, 143, 59, calc(0.05 + (var(--dusk) * 0.12))) 100%),
-        radial-gradient(circle at 80% 29%, rgba(255, 205, 102, calc(0.14 * var(--warm))), transparent 29%);
+            rgba(33, 24, 46, calc(0.10 * (1 - var(--night)))) 0%,
+            rgba(15, 10, 22, calc(0.08 * (1 - var(--night)))) 40%,
+            rgba(255, 149, 72, calc(0.10 * (1 - var(--night)))) 100%),
+        radial-gradient(circle at 86% 21%, rgba(255, 214, 122, calc(0.22 * (1 - var(--night)))), transparent 28%);
     mix-blend-mode: soft-light;
-    opacity: 0.72;
+    opacity: calc(0.70 - (var(--night) * 0.22));
 }
 
 .night-wash {
     z-index: 4;
     background:
-        radial-gradient(circle at 72% 17%, rgba(120, 150, 255, 0.10), transparent 21%),
+        radial-gradient(circle at 84% 11%, rgba(176, 208, 255, calc(0.10 * var(--night))), transparent 16%),
         linear-gradient(180deg,
-            rgba(8, 10, 28, calc(0.68 * var(--night))) 0%,
-            rgba(5, 7, 21, calc(0.52 * var(--night))) 54%,
-            rgba(8, 5, 14, calc(0.42 * var(--night))) 100%);
+            rgba(5, 10, 28, calc(0.18 * var(--night))) 0%,
+            rgba(7, 12, 32, calc(0.12 * var(--night))) 52%,
+            rgba(4, 8, 18, calc(0.18 * var(--night))) 100%);
     opacity: 1;
     mix-blend-mode: multiply;
 }
@@ -137,9 +156,9 @@ button {
     z-index: 5;
     background:
         radial-gradient(circle at 87% 19%,
-            rgba(255, 224, 130, calc(0.38 * var(--warm))) 0%,
-            rgba(255, 152, 59, calc(0.16 * var(--warm))) 14%,
-            transparent 35%);
+            rgba(255, 226, 130, calc(0.42 * (1 - var(--night)))) 0%,
+            rgba(255, 153, 59, calc(0.16 * (1 - var(--night)))) 16%,
+            transparent 36%);
     mix-blend-mode: screen;
     filter: blur(0.4px);
 }
@@ -147,12 +166,12 @@ button {
 .moon-bloom {
     z-index: 5;
     background:
-        radial-gradient(circle at 78% 13%,
-            rgba(208, 224, 255, calc(0.34 * var(--night))) 0%,
-            rgba(84, 108, 175, calc(0.19 * var(--night))) 7%,
-            transparent 18%);
+        radial-gradient(circle at 85% 10%,
+            rgba(235, 241, 255, calc(0.28 * var(--night))) 0%,
+            rgba(120, 157, 255, calc(0.14 * var(--night))) 9%,
+            transparent 21%);
     mix-blend-mode: screen;
-    filter: blur(1px);
+    filter: blur(0.8px);
 }
 
 .horizon-haze {
@@ -160,16 +179,17 @@ button {
     top: auto;
     height: 58%;
     background:
-        linear-gradient(180deg, transparent 0%, rgba(255, 183, 88, calc(0.08 + (var(--dusk) * 0.14))) 38%, rgba(13, 8, 12, 0.2) 100%),
-        radial-gradient(ellipse at 68% 66%, rgba(255, 186, 100, 0.18), transparent 39%);
+        linear-gradient(180deg, transparent 0%, rgba(255, 183, 88, calc(0.10 * (1 - var(--night)))) 38%, rgba(13, 8, 12, calc(0.10 + (var(--night) * 0.10))) 100%),
+        radial-gradient(ellipse at 68% 66%, rgba(255, 186, 100, calc(0.18 * (1 - var(--night)))), transparent 39%),
+        radial-gradient(ellipse at 50% 90%, rgba(85, 126, 255, calc(0.14 * var(--night))), transparent 45%);
     mix-blend-mode: soft-light;
-    opacity: calc(0.48 + (var(--dusk) * 0.24));
+    opacity: calc(0.44 + (var(--night) * 0.12));
 }
 
 .light-leak {
     z-index: 7;
     mix-blend-mode: screen;
-    opacity: calc(0.18 + (var(--dusk) * 0.22));
+    opacity: calc((1 - var(--night)) * 0.20);
     animation: light-breathe 9s ease-in-out infinite alternate;
 }
 
@@ -186,9 +206,9 @@ button {
 .cinematic-vignette {
     z-index: 30;
     background:
-        radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, 0.08) 76%, rgba(0, 0, 0, 0.26) 100%),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.14), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.14));
-    opacity: calc(0.42 + (var(--night) * 0.10));
+        radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, calc(0.08 + (var(--night) * 0.08))) 76%, rgba(0, 0, 0, calc(0.24 + (var(--night) * 0.16))) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, calc(0.12 + (var(--night) * 0.10))), transparent 18%, transparent 82%, rgba(0, 0, 0, calc(0.12 + (var(--night) * 0.10))));
+    opacity: 1;
 }
 
 .mini-runner {
@@ -253,22 +273,15 @@ button {
         0 0 18px rgba(255, 83, 45, 0.18);
 }
 
-.car-switch {
+.car-switch,
+.phase-switch {
     position: fixed;
-    top: clamp(112px, 12vh, 158px);
     right: clamp(22px, 3vw, 64px);
     z-index: 82;
-    min-width: 148px;
+    min-width: 164px;
     padding: 8px 12px;
-    border: 1px solid rgba(255, 214, 132, 0.16);
     border-radius: 14px;
-    background: linear-gradient(180deg, rgba(20, 13, 16, 0.48), rgba(8, 6, 9, 0.28));
-    box-shadow:
-        0 10px 28px rgba(0, 0, 0, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.07),
-        0 0 18px rgba(255, 174, 65, 0.06);
     backdrop-filter: blur(12px);
-    color: rgba(255, 235, 194, 0.82);
     font-size: clamp(10px, 0.72vw, 12px);
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -276,6 +289,28 @@ button {
     text-align: left;
     cursor: pointer;
     transition: transform 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.car-switch {
+    top: clamp(112px, 12vh, 158px);
+    border: 1px solid rgba(255, 214, 132, 0.16);
+    background: linear-gradient(180deg, rgba(20, 13, 16, 0.48), rgba(8, 6, 9, 0.28));
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 0 18px rgba(255, 174, 65, 0.06);
+    color: rgba(255, 235, 194, 0.82);
+}
+
+.phase-switch {
+    top: clamp(158px, 16.5vh, 214px);
+    border: 1px solid rgba(145, 197, 255, 0.18);
+    background: linear-gradient(180deg, rgba(17, 18, 28, 0.48), rgba(8, 6, 12, 0.28));
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 0 18px rgba(120, 170, 255, 0.06);
+    color: rgba(228, 238, 255, 0.82);
 }
 
 .car-switch:hover,
@@ -284,31 +319,6 @@ button {
     border-color: rgba(255, 214, 132, 0.34);
     transform: translateY(-1px);
     outline: none;
-}
-
-.phase-switch {
-    position: fixed;
-    top: clamp(158px, 16.5vh, 214px);
-    right: clamp(22px, 3vw, 64px);
-    z-index: 82;
-    min-width: 148px;
-    padding: 8px 12px;
-    border: 1px solid rgba(145, 197, 255, 0.18);
-    border-radius: 14px;
-    background: linear-gradient(180deg, rgba(17, 18, 28, 0.48), rgba(8, 6, 12, 0.28));
-    box-shadow:
-        0 10px 28px rgba(0, 0, 0, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.07),
-        0 0 18px rgba(120, 170, 255, 0.06);
-    backdrop-filter: blur(12px);
-    color: rgba(228, 238, 255, 0.82);
-    font-size: clamp(10px, 0.72vw, 12px);
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-align: left;
-    cursor: pointer;
-    transition: transform 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 .phase-switch:hover,
