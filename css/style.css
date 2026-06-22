@@ -89,10 +89,7 @@ button {
 }
 
 .cloud-canvas {
-    z-index: 8;
-    height: 32vh;
-    width: 100%;
-    opacity: calc(0.72 - (var(--night) * 0.15));
+    display: none;
 }
 
 .atmosphere-canvas {

@@ -10,7 +10,7 @@
         coinSpeed: 230,
         gravity: 690,
         jumpVelocity: 360,
-        cloudCount: 7
+        cloudCount: 0
     };
 
     const root = document.documentElement;
@@ -351,10 +351,10 @@
         }
 
         const runnerRect = {
-            x: runner.offsetLeft + 8,
-            y: 22 + game.runnerY,
-            width: 30,
-            height: 36
+            x: runner.offsetLeft + runner.offsetWidth * 0.08,
+            y: 18 + game.runnerY,
+            width: runner.offsetWidth * 0.84,
+            height: 42
         };
 
         for (const coin of game.coins) {
@@ -399,7 +399,8 @@
         game.lastTime = now;
 
         updateDayNightCycle();
-        drawCloudLayer(deltaSeconds, now / 1000);
+        // Clouds are disabled for now because the current effect does not fit the wallpaper style.
+        // drawCloudLayer(deltaSeconds, now / 1000);
         drawAtmosphere(deltaSeconds, now / 1000);
         updateMiniGame(deltaSeconds);
 
