@@ -3,8 +3,8 @@
     const CONFIG = {
         localStorageKey: 'thugLifeEngineStatsV1',
         dayNightCycleMinutes: 20,
-        atmosphereParticleCount: 84,
-        starCount: 88,
+        atmosphereParticleCount: 38,
+        starCount: 44,
         coinSpawnMinSeconds: 1.8,
         coinSpawnMaxSeconds: 3.1,
         coinSpeed: 230,
@@ -60,6 +60,18 @@
         runnerVY: 0,
         isJumping: false,
         hasInteracted: false
+    };
+
+    window.thugLifeRuntime = {
+        phase,
+        game,
+        elements: {
+            wallpaper: document.getElementById('wallpaper'),
+            runner,
+            gameLane,
+            miniRunner,
+            coinLayer
+        }
     };
 
     function clamp(value, min, max) {
