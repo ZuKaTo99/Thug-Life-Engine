@@ -810,6 +810,7 @@ button {
 .street-lamp-layer {
     position: absolute;
     inset: 0;
+    z-index: 1;
     pointer-events: none;
 }
 
@@ -820,48 +821,57 @@ button {
     position: absolute;
     left: var(--lamp-x);
     bottom: 24px;
-    width: 4px;
+    width: 5px;
     height: var(--lamp-height);
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(28, 26, 34, 0.18) 0%, rgba(18, 18, 22, 0.72) 34%, rgba(10, 10, 14, 0.90) 100%);
-    box-shadow: 0 0 0 1px rgba(255, 248, 232, 0.03);
-    opacity: calc(0.12 + (var(--night) * 0.42));
+    background: linear-gradient(180deg, rgba(72, 64, 70, 0.22) 0%, rgba(28, 26, 34, 0.78) 36%, rgba(10, 10, 14, 0.94) 100%);
+    box-shadow:
+        0 0 0 1px rgba(255, 248, 232, 0.06),
+        0 0 10px rgba(255, 201, 110, calc(0.04 + (var(--night) * 0.08)));
+    opacity: calc(0.18 + (var(--night) * 0.58));
 }
 
 .street-lamp::before {
     content: "";
     position: absolute;
     left: 50%;
-    top: 7px;
-    width: 22px;
-    height: 9px;
+    top: 6px;
+    width: 26px;
+    height: 11px;
     border-radius: 999px 999px 12px 12px;
     transform: translateX(-50%);
-    background: linear-gradient(180deg, rgba(36, 34, 42, 0.88), rgba(14, 14, 18, 0.96));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
+    background:
+        radial-gradient(circle at 50% 35%, rgba(255, 233, 170, calc(0.14 + (var(--night) * 0.18))) 0 26%, transparent 28%),
+        linear-gradient(180deg, rgba(46, 42, 48, 0.92), rgba(14, 14, 18, 0.98));
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 0 10px rgba(255, 208, 112, calc(0.06 + (var(--night) * 0.16)));
 }
 
 .street-lamp::after {
     content: "";
     position: absolute;
     left: 50%;
-    top: 15px;
-    width: 120px;
-    height: 120px;
+    top: 10px;
+    width: 176px;
+    height: 176px;
     transform: translateX(-50%);
     background:
-        radial-gradient(circle at center, rgba(255, 234, 160, calc(0.34 + (var(--night) * 0.16))) 0%, rgba(255, 182, 80, calc(0.16 + (var(--night) * 0.10))) 22%, rgba(255, 182, 80, calc(0.06 + (var(--night) * 0.02))) 36%, transparent 70%);
+        radial-gradient(circle at 50% 18%, rgba(255, 245, 206, calc(0.38 + (var(--night) * 0.22))) 0 8%, rgba(255, 208, 120, calc(0.30 + (var(--night) * 0.20))) 10%, transparent 22%),
+        radial-gradient(circle at center, rgba(255, 230, 160, calc(0.22 + (var(--night) * 0.16))) 0%, rgba(255, 186, 86, calc(0.18 + (var(--night) * 0.12))) 22%, rgba(255, 182, 80, calc(0.10 + (var(--night) * 0.06))) 34%, transparent 66%),
+        linear-gradient(180deg, rgba(255, 213, 136, calc(0.12 + (var(--night) * 0.08))) 0%, rgba(255, 193, 95, calc(0.06 + (var(--night) * 0.04))) 18%, transparent 66%);
+    clip-path: polygon(48% 0%, 52% 0%, 72% 82%, 28% 82%);
     mix-blend-mode: screen;
-    filter: blur(3px);
-    opacity: calc(0.10 + (var(--night) * 0.62));
+    filter: blur(5px);
+    opacity: calc(0.18 + (var(--night) * 0.82));
     animation: lamp-flicker 5.8s ease-in-out infinite alternate;
     animation-delay: var(--lamp-delay);
 }
 
-.lamp-one { --lamp-x: 8%; --lamp-height: 116px; --lamp-delay: -0.3s; }
-.lamp-two { --lamp-x: 38%; --lamp-height: 94px; --lamp-delay: -1.2s; }
-.lamp-three { --lamp-x: 72%; --lamp-height: 108px; --lamp-delay: -2.5s; }
-.lamp-four { --lamp-x: 95%; --lamp-height: 124px; --lamp-delay: -3.1s; }
+ .lamp-one { --lamp-x: 10%; --lamp-height: 126px; --lamp-delay: -0.3s; }
+ .lamp-two { --lamp-x: 36%; --lamp-height: 106px; --lamp-delay: -1.2s; }
+ .lamp-three { --lamp-x: 70%; --lamp-height: 118px; --lamp-delay: -2.5s; }
+ .lamp-four { --lamp-x: 92%; --lamp-height: 132px; --lamp-delay: -3.1s; }
 
 .ground-strip {
     position: absolute;
