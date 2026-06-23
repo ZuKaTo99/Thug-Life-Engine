@@ -786,8 +786,82 @@ button {
         radial-gradient(ellipse at 80% 50%, rgba(96, 169, 255, calc(0.1 * var(--night))), transparent 40%);
     mix-blend-mode: screen;
     filter: blur(6px);
-    opacity: 0.76;
+    opacity: calc(0.78 + (var(--night) * 0.08));
 }
+
+
+.road-ambient {
+    position: absolute;
+    left: 2%;
+    right: 2%;
+    bottom: 0;
+    height: 132px;
+    background:
+        radial-gradient(ellipse at 18% 86%, rgba(255, 188, 82, calc(0.12 + (var(--night) * 0.04))), transparent 38%),
+        radial-gradient(ellipse at 52% 100%, rgba(255, 177, 72, calc(0.05 + (var(--night) * 0.02))), transparent 42%),
+        radial-gradient(ellipse at 84% 84%, rgba(118, 170, 255, calc(0.04 + (var(--night) * 0.05))), transparent 34%),
+        linear-gradient(180deg, transparent 0%, rgba(255, 196, 106, calc(0.05 * (1 - var(--night)))) 56%, rgba(19, 12, 16, calc(0.10 + (var(--night) * 0.06))) 100%);
+    mix-blend-mode: screen;
+    filter: blur(11px);
+    opacity: calc(0.34 + (var(--night) * 0.26));
+    pointer-events: none;
+}
+
+.street-lamp-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.street-lamp {
+    --lamp-x: 50%;
+    --lamp-height: 104px;
+    --lamp-delay: 0s;
+    position: absolute;
+    left: var(--lamp-x);
+    bottom: 24px;
+    width: 4px;
+    height: var(--lamp-height);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(28, 26, 34, 0.18) 0%, rgba(18, 18, 22, 0.72) 34%, rgba(10, 10, 14, 0.90) 100%);
+    box-shadow: 0 0 0 1px rgba(255, 248, 232, 0.03);
+    opacity: calc(0.12 + (var(--night) * 0.42));
+}
+
+.street-lamp::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 7px;
+    width: 22px;
+    height: 9px;
+    border-radius: 999px 999px 12px 12px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(36, 34, 42, 0.88), rgba(14, 14, 18, 0.96));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+.street-lamp::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 15px;
+    width: 120px;
+    height: 120px;
+    transform: translateX(-50%);
+    background:
+        radial-gradient(circle at center, rgba(255, 234, 160, calc(0.34 + (var(--night) * 0.16))) 0%, rgba(255, 182, 80, calc(0.16 + (var(--night) * 0.10))) 22%, rgba(255, 182, 80, calc(0.06 + (var(--night) * 0.02))) 36%, transparent 70%);
+    mix-blend-mode: screen;
+    filter: blur(3px);
+    opacity: calc(0.10 + (var(--night) * 0.62));
+    animation: lamp-flicker 5.8s ease-in-out infinite alternate;
+    animation-delay: var(--lamp-delay);
+}
+
+.lamp-one { --lamp-x: 8%; --lamp-height: 116px; --lamp-delay: -0.3s; }
+.lamp-two { --lamp-x: 38%; --lamp-height: 94px; --lamp-delay: -1.2s; }
+.lamp-three { --lamp-x: 72%; --lamp-height: 108px; --lamp-delay: -2.5s; }
+.lamp-four { --lamp-x: 95%; --lamp-height: 124px; --lamp-delay: -3.1s; }
 
 .ground-strip {
     position: absolute;
@@ -802,8 +876,8 @@ button {
             rgba(255, 214, 124, 0.08) 22px 42px,
             transparent 42px 62px),
         linear-gradient(90deg, transparent, rgba(255, 203, 111, 0.28), transparent);
-    box-shadow: 0 0 14px rgba(255, 188, 86, 0.16);
-    opacity: 0.5;
+    box-shadow: 0 0 18px rgba(255, 188, 86, 0.24), 0 0 32px rgba(255, 180, 72, 0.10);
+    opacity: calc(0.54 + (var(--night) * 0.12));
     animation: ground-scroll 1.15s linear infinite;
 }
 

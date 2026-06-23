@@ -89,6 +89,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         activeCar: null,
         carUnderGlow: null,
         headLights: [],
+        headBeams: [],
         tailLights: []
     };
 
@@ -96,6 +97,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         warm: createGlowTexture("rgba(255, 214, 129, 1)", "rgba(255, 153, 62, 0.28)"),
         red: createGlowTexture("rgba(255, 92, 112, 1)", "rgba(255, 56, 90, 0.20)"),
         white: createGlowTexture("rgba(255, 248, 225, 1)", "rgba(255, 255, 255, 0.08)"),
+        beam: createBeamTexture(),
         rain: createRainTexture()
     };
 
@@ -138,6 +140,28 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         g.fillStyle = "rgba(255,255,255,0.28)";
         g.beginPath();
         g.ellipse(12, 98, 3, 8, -0.15, 0, Math.PI * 2);
+        g.fill();
+        const texture = new THREE.CanvasTexture(c);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        return texture;
+    }
+
+    function createBeamTexture() {
+        const c = document.createElement("canvas");
+        c.width = 512;
+        c.height = 128;
+        const g = c.getContext("2d");
+        const grad = g.createLinearGradient(0, 64, 512, 64);
+        grad.addColorStop(0, "rgba(255, 245, 220, 0.78)");
+        grad.addColorStop(0.18, "rgba(255, 228, 182, 0.34)");
+        grad.addColorStop(0.58, "rgba(255, 214, 154, 0.12)");
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+        g.fillStyle = grad;
+        g.beginPath();
+        g.moveTo(0, 64);
+        g.lineTo(512, 8);
+        g.lineTo(512, 120);
+        g.closePath();
         g.fill();
         const texture = new THREE.CanvasTexture(c);
         texture.colorSpace = THREE.SRGBColorSpace;
@@ -365,19 +389,30 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
     }
 
     function buildCarLights() {
-        const under = makeSprite(tex.red, 170, 42, 0xffffff, 0.22);
+        const under = makeSprite(tex.red, 196, 52, 0xffffff, 0.24);
         under.position.set(0, 22, -35);
         carAnchor.add(under);
         runtime.carUnderGlow = under;
 
-        const headLeft = makeSprite(tex.white, 24, 12, 0xfff0d2, 0.14);
+        const headLeft = makeSprite(tex.white, 32, 16, 0xfff2dd, 0.18);
         const headRight = headLeft.clone();
         headLeft.position.set(68, 2, -16);
         headRight.position.set(68, 2, 16);
         carAnchor.add(headLeft, headRight);
         runtime.headLights.push(headLeft, headRight);
 
-        const tailLeft = makeSprite(tex.red, 20, 10, 0xffffff, 0.18);
+        const beamLeft = makeSprite(tex.beam, 156, 44, 0xffe7b8, 0.10);
+        const beamRight = beamLeft.clone();
+        beamLeft.center.set(0.08, 0.5);
+        beamRight.center.set(0.08, 0.5);
+        beamLeft.position.set(136, 0, -16);
+        beamRight.position.set(136, 0, 16);
+        beamLeft.material.rotation = -0.03;
+        beamRight.material.rotation = 0.03;
+        carAnchor.add(beamLeft, beamRight);
+        runtime.headBeams.push(beamLeft, beamRight);
+
+        const tailLeft = makeSprite(tex.red, 22, 10, 0xffffff, 0.18);
         const tailRight = tailLeft.clone();
         tailLeft.position.set(-68, 2, -16);
         tailRight.position.set(-68, 2, 16);
@@ -501,8 +536,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         carAnchor.rotation.z = (jumping ? -0.04 : 0) + Math.sin(elapsed * 2.0) * 0.004;
 
         const cityActivation = state.night;
-        if (runtime.carUnderGlow) runtime.carUnderGlow.material.opacity = 0.14 + cityActivation * 0.42;
-        runtime.headLights.forEach((light) => (light.material.opacity = 0.08 + cityActivation * 0.62));
+        if (runtime.carUnderGlow) runtime.carUnderGlow.material.opacity = 0.16 + cityActivation * 0.46;
+        runtime.headLights.forEach((light) => (light.material.opacity = 0.14 + cityActivation * 0.70));
+        runtime.headBeams.forEach((beam) => (beam.material.opacity = 0.06 + cityActivation * 0.26));
         runtime.tailLights.forEach((light) => (light.material.opacity = 0.12 + cityActivation * 0.34));
     }
 
