@@ -442,7 +442,6 @@
         video.setAttribute('muted', '');
         video.setAttribute('playsinline', '');
         video.setAttribute('preload', 'auto');
-        video.crossOrigin = 'anonymous';
     }
 
     function startVideo(video, retries = 5, shouldLoop = true) {
