@@ -35,8 +35,14 @@
     const clockSeconds = document.getElementById('clockSeconds');
     const skyCloudVideos = Array.from(document.querySelectorAll('.sky-cloud-video'));
     const rainOverlayVideo = document.getElementById('rainOverlayVideo');
-    const lightningFrontVideo = document.getElementById('lightningFrontVideo');
-    const lightningVideoLayer = document.querySelector('.lightning-video-layer');
+    const lightningZoneLeft = document.getElementById('lightningZoneLeft');
+    const lightningZoneRight = document.getElementById('lightningZoneRight');
+    const lightningFrontVideoLeft = document.getElementById('lightningFrontVideoLeft');
+    const lightningFrontVideoRight = document.getElementById('lightningFrontVideoRight');
+    const lightningZones = [
+        { layer: lightningZoneLeft, video: lightningFrontVideoLeft },
+        { layer: lightningZoneRight, video: lightningFrontVideoRight }
+    ].filter((entry) => entry.layer && entry.video);
 
     const phase = {
         night: 0,
@@ -472,11 +478,11 @@
     function startVideoLayers() {
         startPersistentVideos();
 
-        if (lightningFrontVideo) {
-            prepareVideo(lightningFrontVideo, false);
-            lightningFrontVideo.pause();
-            lightningFrontVideo.currentTime = 0;
-        }
+        lightningZones.forEach(({ video }) => {
+            prepareVideo(video, false);
+            video.pause();
+            video.currentTime = 0;
+        });
     }
 
     function bindVideoSafetyEvents() {
@@ -500,28 +506,36 @@
     }
 
     function triggerLightning(now) {
-        if (!lightningFrontVideo || !lightningVideoLayer || phase.night < 0.5) return;
+        if (lightningZones.length === 0 || phase.night < 0.5) return;
 
-        const zoneClass = Math.random() < 0.5 ? 'lightning-left-zone' : 'lightning-right-zone';
-        lightningVideoLayer.classList.remove('lightning-left-zone', 'lightning-right-zone');
-        lightningVideoLayer.classList.add(zoneClass, 'is-active');
-        lightningFrontVideo.currentTime = 0;
-        startVideo(lightningFrontVideo);
+        const target = lightningZones[Math.random() < 0.5 ? 0 : 1];
+        lightningZones.forEach(({ layer, video }) => {
+            layer.classList.remove('is-active');
+            video.pause();
+            video.currentTime = 0;
+        });
+
+        target.layer.classList.add('is-active');
+        target.video.currentTime = 0;
+        startVideo(target.video);
 
         videoFx.lightningActiveUntil = now + 950;
         videoFx.nextLightningAt = now + randomRange(24000, 52000);
     }
 
     function updateVideoEffects(now) {
-        if (!lightningVideoLayer) return;
+        if (lightningZones.length === 0) return;
 
         if (phase.night < 0.5) {
-            lightningVideoLayer.classList.remove('is-active', 'lightning-left-zone', 'lightning-right-zone');
+            lightningZones.forEach(({ layer, video }) => {
+                layer.classList.remove('is-active');
+                if (!video.paused) {
+                    video.pause();
+                }
+                video.currentTime = 0;
+            });
             videoFx.nextLightningAt = now + randomRange(18000, 34000);
             videoFx.lightningActiveUntil = 0;
-            if (lightningFrontVideo && !lightningFrontVideo.paused) {
-                lightningFrontVideo.pause();
-            }
             return;
         }
 
@@ -530,11 +544,14 @@
         }
 
         if (videoFx.lightningActiveUntil > 0 && now >= videoFx.lightningActiveUntil) {
-            lightningVideoLayer.classList.remove('is-active', 'lightning-left-zone', 'lightning-right-zone');
+            lightningZones.forEach(({ layer, video }) => {
+                layer.classList.remove('is-active');
+                if (!video.paused) {
+                    video.pause();
+                }
+                video.currentTime = 0;
+            });
             videoFx.lightningActiveUntil = 0;
-            if (lightningFrontVideo && !lightningFrontVideo.paused) {
-                lightningFrontVideo.pause();
-            }
         }
     }
 

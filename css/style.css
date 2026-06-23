@@ -202,39 +202,53 @@ button {
     object-position: center center;
 }
 
-.lightning-video-layer {
+.lightning-zone {
+    position: absolute;
     z-index: 22;
+    overflow: hidden;
+    pointer-events: none;
     opacity: 0;
     mix-blend-mode: screen;
-    filter: contrast(1.16) brightness(1.08) saturate(0.84);
+    filter: contrast(1.2) brightness(1.12) saturate(0.88);
     transition: opacity 140ms ease-out;
-    pointer-events: none;
 }
 
-.lightning-video-layer.is-active {
-    opacity: calc(var(--night) * 0.32);
+.lightning-zone.is-active {
+    opacity: calc(var(--night) * 0.42);
 }
 
-.lightning-video-layer.lightning-left-zone {
-    clip-path: polygon(0% 0%, 18% 0%, 18% 68%, 0% 68%);
+.lightning-zone-left {
+    left: 0;
+    top: 0;
+    width: 28vw;
+    height: 66vh;
 }
 
-.lightning-video-layer.lightning-right-zone {
-    clip-path: polygon(64% 0%, 100% 0%, 100% 70%, 64% 70%);
+.lightning-zone-right {
+    right: 0;
+    top: 0;
+    width: 42vw;
+    height: 68vh;
 }
 
 .lightning-front-video {
-    object-position: center center;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    user-select: none;
 }
 
-.lightning-video-layer.lightning-left-zone .lightning-front-video {
-    object-position: 8% 12%;
-    transform: scale(1.00);
+.lightning-front-video-left {
+    object-position: left top;
+    transform: scale(1.18);
+    transform-origin: left top;
 }
 
-.lightning-video-layer.lightning-right-zone .lightning-front-video {
-    object-position: 92% 12%;
-    transform: scale(1.00);
+.lightning-front-video-right {
+    object-position: right top;
+    transform: scale(1.18);
+    transform-origin: right top;
 }
 
 .three-layer {
