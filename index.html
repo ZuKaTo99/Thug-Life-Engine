@@ -38,58 +38,54 @@
             <video
                 class="fx-video rain-overlay-video"
                 id="rainOverlayVideo"
-                src="assets/video/rain_night_overlay.mp4"
                 autoplay
                 muted
                 loop
                 playsinline
                 preload="auto"
-            ></video>
+            >
+                <source src="media/video/rain_night_overlay.webm" type="video/webm" />
+                <source src="media/video/rain_night_overlay.mp4" type="video/mp4" />
+            </video>
         </div>
 
         <div class="lightning-zone lightning-zone-left" id="lightningZoneLeft" aria-hidden="true">
             <video
                 class="fx-video lightning-front-video lightning-front-video-left"
                 id="lightningFrontVideoLeft"
-                src="assets/video/lightning_front.mp4"
                 muted
                 playsinline
                 preload="auto"
-            ></video>
-            <svg class="lightning-svg lightning-svg-left" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <polyline class="lightning-aura" points="48,0 28,16 44,16 22,38 38,38 14,72" />
-                <polyline class="lightning-core" points="48,0 28,16 44,16 22,38 38,38 14,72" />
-            </svg>
+            >
+                <source src="media/video/lightning_front.webm" type="video/webm" />
+                <source src="media/video/lightning_front.mp4" type="video/mp4" />
+            </video>
         </div>
 
         <div class="lightning-zone lightning-zone-mid-right" id="lightningZoneMidRight" aria-hidden="true">
             <video
                 class="fx-video lightning-front-video lightning-front-video-mid-right"
                 id="lightningFrontVideoMidRight"
-                src="assets/video/lightning_front.mp4"
                 muted
                 playsinline
                 preload="auto"
-            ></video>
-            <svg class="lightning-svg lightning-svg-mid-right" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <polyline class="lightning-aura" points="18,0 44,20 32,20 66,44 48,44 76,86" />
-                <polyline class="lightning-core" points="18,0 44,20 32,20 66,44 48,44 76,86" />
-            </svg>
+            >
+                <source src="media/video/lightning_front.webm" type="video/webm" />
+                <source src="media/video/lightning_front.mp4" type="video/mp4" />
+            </video>
         </div>
 
         <div class="lightning-zone lightning-zone-right" id="lightningZoneRight" aria-hidden="true">
             <video
                 class="fx-video lightning-front-video lightning-front-video-right"
                 id="lightningFrontVideoRight"
-                src="assets/video/lightning_front.mp4"
                 muted
                 playsinline
                 preload="auto"
-            ></video>
-            <svg class="lightning-svg lightning-svg-right" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <polyline class="lightning-aura" points="54,0 76,16 58,18 82,36 62,38 86,58 70,60 92,82" />
-                <polyline class="lightning-core" points="54,0 76,16 58,18 82,36 62,38 86,58 70,60 92,82" />
-            </svg>
+            >
+                <source src="media/video/lightning_front.webm" type="video/webm" />
+                <source src="media/video/lightning_front.mp4" type="video/mp4" />
+            </video>
         </div>
 
         <canvas class="three-layer" id="threeCanvas" aria-hidden="true"></canvas>

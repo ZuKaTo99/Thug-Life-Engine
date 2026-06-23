@@ -25,7 +25,7 @@ Aktueller Stand vom Projekt.
 - `js/app.js` = Wallpaper-Logik, Uhr, Tag/Nacht, Mini-Game
 - `js/three-scene.js` = Three.js-Effekte / 3D-Teil
 - `assets/images/` = Bilder
-- `assets/video/` = Video-Assets
+- `media/video/` = Video-Assets für Wallpaper Engine
 - `assets/models/` = Auto-Modelle
 - `assets/effects/` = Zusatz-Assets für Effekte
 
@@ -33,3 +33,7 @@ Aktueller Stand vom Projekt.
 - vorhandenen Look weiter sauber verfeinern
 - nichts kaputt machen
 - Qualität vor Quantität
+
+## Wallpaper Engine Hinweis
+- Video-Assets liegen unter `media/video/`.
+- WebM-Dateien werden im HTML zuerst geladen; MP4-Dateien bleiben als Reserve im Projekt.
