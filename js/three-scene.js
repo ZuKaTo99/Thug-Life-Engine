@@ -394,21 +394,21 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         carAnchor.add(under);
         runtime.carUnderGlow = under;
 
-        const headLeft = makeSprite(tex.white, 40, 20, 0xfff4de, 0.22);
+        const headLeft = makeSprite(tex.white, 32, 16, 0xfff2dd, 0.18);
         const headRight = headLeft.clone();
         headLeft.position.set(68, 2, -16);
         headRight.position.set(68, 2, 16);
         carAnchor.add(headLeft, headRight);
         runtime.headLights.push(headLeft, headRight);
 
-        const beamLeft = makeSprite(tex.beam, 220, 62, 0xffedc2, 0.14);
+        const beamLeft = makeSprite(tex.beam, 156, 44, 0xffe7b8, 0.10);
         const beamRight = beamLeft.clone();
         beamLeft.center.set(0.08, 0.5);
         beamRight.center.set(0.08, 0.5);
-        beamLeft.position.set(150, 0, -16);
-        beamRight.position.set(150, 0, 16);
-        beamLeft.rotation = -0.03;
-        beamRight.rotation = 0.03;
+        beamLeft.position.set(136, 0, -16);
+        beamRight.position.set(136, 0, 16);
+        beamLeft.material.rotation = -0.03;
+        beamRight.material.rotation = 0.03;
         carAnchor.add(beamLeft, beamRight);
         runtime.headBeams.push(beamLeft, beamRight);
 
@@ -536,9 +536,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
         carAnchor.rotation.z = (jumping ? -0.04 : 0) + Math.sin(elapsed * 2.0) * 0.004;
 
         const cityActivation = state.night;
-        if (runtime.carUnderGlow) runtime.carUnderGlow.material.opacity = 0.18 + cityActivation * 0.52;
-        runtime.headLights.forEach((light) => (light.material.opacity = 0.18 + cityActivation * 0.86));
-        runtime.headBeams.forEach((beam) => (beam.material.opacity = 0.10 + cityActivation * 0.42));
+        if (runtime.carUnderGlow) runtime.carUnderGlow.material.opacity = 0.16 + cityActivation * 0.46;
+        runtime.headLights.forEach((light) => (light.material.opacity = 0.14 + cityActivation * 0.70));
+        runtime.headBeams.forEach((beam) => (beam.material.opacity = 0.06 + cityActivation * 0.26));
         runtime.tailLights.forEach((light) => (light.material.opacity = 0.12 + cityActivation * 0.34));
     }
 
