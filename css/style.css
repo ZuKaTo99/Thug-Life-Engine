@@ -208,14 +208,33 @@ button {
     mix-blend-mode: screen;
     filter: contrast(1.16) brightness(1.08) saturate(0.84);
     transition: opacity 140ms ease-out;
+    pointer-events: none;
 }
 
 .lightning-video-layer.is-active {
     opacity: calc(var(--night) * 0.32);
 }
 
+.lightning-video-layer.lightning-left-zone {
+    clip-path: polygon(0% 0%, 36% 0%, 31% 58%, 0% 58%);
+}
+
+.lightning-video-layer.lightning-right-zone {
+    clip-path: polygon(54% 0%, 100% 0%, 100% 63%, 52% 63%, 49% 28%);
+}
+
 .lightning-front-video {
     object-position: center center;
+}
+
+.lightning-video-layer.lightning-left-zone .lightning-front-video {
+    object-position: 24% 18%;
+    transform: scale(1.08);
+}
+
+.lightning-video-layer.lightning-right-zone .lightning-front-video {
+    object-position: 76% 18%;
+    transform: scale(1.08);
 }
 
 .three-layer {

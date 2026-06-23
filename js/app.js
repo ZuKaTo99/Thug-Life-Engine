@@ -502,7 +502,9 @@
     function triggerLightning(now) {
         if (!lightningFrontVideo || !lightningVideoLayer || phase.night < 0.5) return;
 
-        lightningVideoLayer.classList.add('is-active');
+        const zoneClass = Math.random() < 0.5 ? 'lightning-left-zone' : 'lightning-right-zone';
+        lightningVideoLayer.classList.remove('lightning-left-zone', 'lightning-right-zone');
+        lightningVideoLayer.classList.add(zoneClass, 'is-active');
         lightningFrontVideo.currentTime = 0;
         startVideo(lightningFrontVideo);
 
@@ -514,7 +516,7 @@
         if (!lightningVideoLayer) return;
 
         if (phase.night < 0.5) {
-            lightningVideoLayer.classList.remove('is-active');
+            lightningVideoLayer.classList.remove('is-active', 'lightning-left-zone', 'lightning-right-zone');
             videoFx.nextLightningAt = now + randomRange(18000, 34000);
             videoFx.lightningActiveUntil = 0;
             if (lightningFrontVideo && !lightningFrontVideo.paused) {
@@ -528,7 +530,7 @@
         }
 
         if (videoFx.lightningActiveUntil > 0 && now >= videoFx.lightningActiveUntil) {
-            lightningVideoLayer.classList.remove('is-active');
+            lightningVideoLayer.classList.remove('is-active', 'lightning-left-zone', 'lightning-right-zone');
             videoFx.lightningActiveUntil = 0;
             if (lightningFrontVideo && !lightningFrontVideo.paused) {
                 lightningFrontVideo.pause();
