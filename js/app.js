@@ -424,19 +424,38 @@
         }
     }
 
-    function startVideo(video) {
+    function prepareVideo(video, shouldLoop = true) {
         if (!video) return;
         video.muted = true;
+        video.defaultMuted = true;
+        video.loop = shouldLoop;
         video.playsInline = true;
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('preload', 'auto');
+        video.crossOrigin = 'anonymous';
+    }
+
+    function startVideo(video, retries = 5, shouldLoop = true) {
+        if (!video) return;
+        prepareVideo(video, shouldLoop);
+
+        try {
+            if (video.readyState === 0) video.load();
+        } catch {
+            // Loading can fail if Wallpaper Engine is still preparing the asset.
+        }
+
         const playPromise = video.play();
         if (playPromise && typeof playPromise.catch === 'function') {
             playPromise.catch(() => {
-                // Wallpaper Engine/browser may delay autoplay until the page is ready.
+                if (retries <= 0) return;
+                window.setTimeout(() => startVideo(video, retries - 1, shouldLoop), 420);
             });
         }
     }
 
-    function startVideoLayers() {
+    function startPersistentVideos() {
         skyCloudVideos.forEach((video, index) => {
             if (!video) return;
             try {
@@ -444,15 +463,40 @@
             } catch {
                 // Some browsers may block setting currentTime before metadata is ready.
             }
-            startVideo(video);
+            startVideo(video, 4, true);
         });
 
-        startVideo(rainOverlayVideo);
+        startVideo(rainOverlayVideo, 8, true);
+    }
+
+    function startVideoLayers() {
+        startPersistentVideos();
 
         if (lightningFrontVideo) {
+            prepareVideo(lightningFrontVideo, false);
             lightningFrontVideo.pause();
             lightningFrontVideo.currentTime = 0;
         }
+    }
+
+    function bindVideoSafetyEvents() {
+        if (rainOverlayVideo) {
+            rainOverlayVideo.addEventListener('loadeddata', () => startVideo(rainOverlayVideo, 6, true));
+            rainOverlayVideo.addEventListener('canplay', () => startVideo(rainOverlayVideo, 6, true));
+            rainOverlayVideo.addEventListener('ended', () => {
+                rainOverlayVideo.currentTime = 0;
+                startVideo(rainOverlayVideo, 6, true);
+            });
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) startPersistentVideos();
+        });
+
+        window.addEventListener('focus', startPersistentVideos);
+        window.addEventListener('pageshow', startPersistentVideos);
+        window.setTimeout(startPersistentVideos, 700);
+        window.setTimeout(startPersistentVideos, 1800);
     }
 
     function triggerLightning(now) {
@@ -730,6 +774,7 @@
     loadStats();
     resizeCanvas();
     bindEvents();
+    bindVideoSafetyEvents();
     startVideoLayers();
     updateClock();
     setInterval(updateClock, 1000);

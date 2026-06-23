@@ -531,7 +531,7 @@ button {
     top: clamp(40px, 5vh, 82px);
     right: clamp(286px, 23vw, 410px);
     z-index: 84;
-    width: clamp(300px, 26vw, 390px);
+    width: clamp(340px, 28vw, 430px);
     padding: 1px;
     overflow: hidden;
     border-radius: 22px;
@@ -563,8 +563,8 @@ button {
     position: relative;
     display: grid;
     gap: 8px;
-    min-height: 120px;
-    padding: 15px 22px 18px 34px;
+    min-height: 132px;
+    padding: 18px 24px 20px 38px;
     border-radius: 21px;
     clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
     background:
@@ -602,7 +602,7 @@ button {
 
 .clock-weekday,
 .clock-date {
-    font-size: clamp(10px, 0.72vw, 13px);
+    font-size: clamp(11px, 0.80vw, 14px);
     line-height: 1;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -627,7 +627,7 @@ button {
 }
 
 .clock-time {
-    font-size: clamp(46px, 4.65vw, 72px);
+    font-size: clamp(54px, 5.1vw, 82px);
     line-height: 0.9;
     font-weight: 900;
     letter-spacing: 0.02em;
@@ -641,14 +641,14 @@ button {
 }
 
 .clock-seconds {
-    min-width: 42px;
-    padding: 6px 0 7px;
+    min-width: 50px;
+    padding: 7px 0 8px;
     margin-bottom: 5px;
     border-radius: 999px;
     background: linear-gradient(180deg,
         rgba(255, 214, 120, calc(0.12 - (var(--night) * 0.05))) 0%,
         rgba(111, 164, 255, calc(0.10 * var(--night))) 100%);
-    font-size: clamp(15px, 1.05vw, 20px);
+    font-size: clamp(17px, 1.18vw, 23px);
     line-height: 1;
     font-weight: 900;
     letter-spacing: 0.08em;
@@ -665,18 +665,18 @@ button {
 
 .mini-hud {
     position: fixed;
-    top: clamp(26px, 3.2vh, 54px);
-    right: clamp(36px, 4.2vw, 92px);
-    left: auto;
+    left: clamp(34px, 3vw, 56px);
+    bottom: clamp(174px, 19vh, 238px);
+    right: auto;
     z-index: 80;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
     justify-content: center;
     transform: none;
-    min-width: 148px;
-    padding: 10px 13px;
+    min-width: 184px;
+    padding: 13px 16px;
     border: 1px solid rgba(255, 214, 132, 0.18);
     border-radius: 16px;
     background:
@@ -687,7 +687,7 @@ button {
         0 0 22px rgba(255, 174, 65, 0.08);
     backdrop-filter: blur(12px);
     color: rgba(255, 235, 194, 0.82);
-    font-size: clamp(10px, 0.72vw, 13px);
+    font-size: clamp(12px, 0.86vw, 15px);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
@@ -711,13 +711,14 @@ button {
 .car-switch,
 .phase-switch {
     position: fixed;
-    right: clamp(36px, 4.2vw, 92px);
+    left: clamp(34px, 3vw, 56px);
+    right: auto;
     z-index: 82;
-    min-width: 164px;
-    padding: 8px 12px;
-    border-radius: 14px;
+    min-width: 214px;
+    padding: 10px 15px;
+    border-radius: 16px;
     backdrop-filter: blur(12px);
-    font-size: clamp(10px, 0.72vw, 12px);
+    font-size: clamp(12px, 0.84vw, 14px);
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -727,7 +728,7 @@ button {
 }
 
 .car-switch {
-    top: clamp(112px, 12vh, 158px);
+    bottom: clamp(62px, 7.5vh, 102px);
     border: 1px solid rgba(255, 214, 132, 0.16);
     background: linear-gradient(180deg, rgba(20, 13, 16, 0.48), rgba(8, 6, 9, 0.28));
     box-shadow:
@@ -738,7 +739,7 @@ button {
 }
 
 .phase-switch {
-    top: clamp(158px, 16.5vh, 214px);
+    bottom: clamp(120px, 13vh, 166px);
     border: 1px solid rgba(145, 197, 255, 0.18);
     background: linear-gradient(180deg, rgba(17, 18, 28, 0.48), rgba(8, 6, 12, 0.28));
     box-shadow:
@@ -1122,24 +1123,27 @@ button {
     .wall-clock {
         top: 18px;
         right: 236px;
-        width: clamp(280px, 36vw, 340px);
+        width: clamp(300px, 40vw, 360px);
     }
 
     .wall-clock-inner {
-        min-height: 106px;
-        padding: 14px 20px 16px 28px;
+        min-height: 112px;
+        padding: 15px 20px 17px 30px;
     }
 
     .mini-hud {
-        top: 4px;
+        left: 20px;
+        bottom: 166px;
     }
 
     .car-switch {
-        top: 72px;
+        left: 20px;
+        bottom: 60px;
     }
 
     .phase-switch {
-        top: 112px;
+        left: 20px;
+        bottom: 116px;
     }
 }
 
@@ -1155,6 +1159,24 @@ button {
     .wall-clock-inner {
         min-height: 98px;
         padding: 12px 16px 14px 24px;
+    }
+
+    .mini-hud {
+        left: 14px;
+        bottom: 162px;
+        min-width: 170px;
+    }
+
+    .car-switch {
+        left: 14px;
+        bottom: 58px;
+        min-width: 200px;
+    }
+
+    .phase-switch {
+        left: 14px;
+        bottom: 112px;
+        min-width: 200px;
     }
 
     .clock-row {
