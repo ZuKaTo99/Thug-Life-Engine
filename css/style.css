@@ -216,11 +216,11 @@ button {
 }
 
 .lightning-video-layer.lightning-left-zone {
-    clip-path: polygon(0% 0%, 26% 0%, 26% 74%, 0% 74%);
+    clip-path: polygon(0% 0%, 18% 0%, 18% 68%, 0% 68%);
 }
 
 .lightning-video-layer.lightning-right-zone {
-    clip-path: polygon(52% 0%, 100% 0%, 100% 76%, 52% 76%);
+    clip-path: polygon(64% 0%, 100% 0%, 100% 70%, 64% 70%);
 }
 
 .lightning-front-video {
@@ -228,13 +228,13 @@ button {
 }
 
 .lightning-video-layer.lightning-left-zone .lightning-front-video {
-    object-position: 18% 14%;
-    transform: scale(1.04);
+    object-position: 8% 12%;
+    transform: scale(1.00);
 }
 
 .lightning-video-layer.lightning-right-zone .lightning-front-video {
-    object-position: 84% 14%;
-    transform: scale(1.04);
+    object-position: 92% 12%;
+    transform: scale(1.00);
 }
 
 .three-layer {
