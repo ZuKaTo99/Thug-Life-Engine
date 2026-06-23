@@ -209,26 +209,33 @@ button {
     pointer-events: none;
     opacity: 0;
     mix-blend-mode: screen;
-    filter: contrast(1.24) brightness(1.18) saturate(0.92);
+    filter: contrast(1.30) brightness(1.24) saturate(0.94);
     transition: opacity 140ms ease-out;
 }
 
 .lightning-zone.is-active {
-    opacity: calc(var(--night) * 0.50);
+    opacity: calc(var(--night) * 0.58);
 }
 
 .lightning-zone-left {
-    left: 0;
-    top: 0;
-    width: 28vw;
-    height: 66vh;
+    left: 2vw;
+    top: 4vh;
+    width: 17vw;
+    height: 58vh;
+}
+
+.lightning-zone-mid-right {
+    left: 63vw;
+    top: 2vh;
+    width: 15vw;
+    height: 70vh;
 }
 
 .lightning-zone-right {
-    right: 0;
-    top: 0;
-    width: 42vw;
-    height: 68vh;
+    right: 1.5vw;
+    top: 4vh;
+    width: 17vw;
+    height: 64vh;
 }
 
 .lightning-front-video {
@@ -240,14 +247,20 @@ button {
 }
 
 .lightning-front-video-left {
-    object-position: left top;
-    transform: scale(1.18);
+    object-position: 12% 0%;
+    transform: scale(1.22);
     transform-origin: left top;
 }
 
+.lightning-front-video-mid-right {
+    object-position: 54% 0%;
+    transform: scale(1.24);
+    transform-origin: top center;
+}
+
 .lightning-front-video-right {
-    object-position: right top;
-    transform: scale(1.18);
+    object-position: 88% 0%;
+    transform: scale(1.20);
     transform-origin: right top;
 }
 
@@ -307,11 +320,12 @@ button {
     z-index: 5;
     background:
         radial-gradient(circle at 85% 10%,
-            rgba(235, 241, 255, calc(0.28 * var(--night))) 0%,
-            rgba(120, 157, 255, calc(0.14 * var(--night))) 9%,
-            transparent 21%);
+            rgba(244, 247, 255, calc(0.42 * var(--night))) 0%,
+            rgba(196, 214, 255, calc(0.24 * var(--night))) 7%,
+            rgba(120, 157, 255, calc(0.18 * var(--night))) 14%,
+            transparent 28%);
     mix-blend-mode: screen;
-    filter: blur(0.8px);
+    filter: blur(1.2px);
 }
 
 .horizon-haze {

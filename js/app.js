@@ -36,11 +36,14 @@
     const skyCloudVideos = Array.from(document.querySelectorAll('.sky-cloud-video'));
     const rainOverlayVideo = document.getElementById('rainOverlayVideo');
     const lightningZoneLeft = document.getElementById('lightningZoneLeft');
+    const lightningZoneMidRight = document.getElementById('lightningZoneMidRight');
     const lightningZoneRight = document.getElementById('lightningZoneRight');
     const lightningFrontVideoLeft = document.getElementById('lightningFrontVideoLeft');
+    const lightningFrontVideoMidRight = document.getElementById('lightningFrontVideoMidRight');
     const lightningFrontVideoRight = document.getElementById('lightningFrontVideoRight');
     const lightningZones = [
         { layer: lightningZoneLeft, video: lightningFrontVideoLeft },
+        { layer: lightningZoneMidRight, video: lightningFrontVideoMidRight },
         { layer: lightningZoneRight, video: lightningFrontVideoRight }
     ].filter((entry) => entry.layer && entry.video);
 
@@ -80,7 +83,7 @@
     };
 
     const videoFx = {
-        nextLightningAt: performance.now() + randomRange(15000, 28000),
+        nextLightningAt: performance.now() + randomRange(12000, 22000),
         lightningActiveUntil: 0
     };
 
@@ -508,7 +511,7 @@
     function triggerLightning(now) {
         if (lightningZones.length === 0 || phase.night < 0.5) return;
 
-        const target = lightningZones[Math.random() < 0.5 ? 0 : 1];
+        const target = lightningZones[Math.floor(Math.random() * lightningZones.length)];
         lightningZones.forEach(({ layer, video }) => {
             layer.classList.remove('is-active');
             video.pause();
@@ -519,8 +522,8 @@
         target.video.currentTime = 0;
         startVideo(target.video);
 
-        videoFx.lightningActiveUntil = now + 1250;
-        videoFx.nextLightningAt = now + randomRange(18000, 42000);
+        videoFx.lightningActiveUntil = now + 1600;
+        videoFx.nextLightningAt = now + randomRange(14000, 30000);
     }
 
     function updateVideoEffects(now) {
@@ -534,7 +537,7 @@
                 }
                 video.currentTime = 0;
             });
-            videoFx.nextLightningAt = now + randomRange(15000, 28000);
+            videoFx.nextLightningAt = now + randomRange(12000, 22000);
             videoFx.lightningActiveUntil = 0;
             return;
         }
