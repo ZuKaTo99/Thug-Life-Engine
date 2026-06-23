@@ -80,7 +80,7 @@
     };
 
     const videoFx = {
-        nextLightningAt: performance.now() + randomRange(18000, 34000),
+        nextLightningAt: performance.now() + randomRange(15000, 28000),
         lightningActiveUntil: 0
     };
 
@@ -519,8 +519,8 @@
         target.video.currentTime = 0;
         startVideo(target.video);
 
-        videoFx.lightningActiveUntil = now + 950;
-        videoFx.nextLightningAt = now + randomRange(24000, 52000);
+        videoFx.lightningActiveUntil = now + 1250;
+        videoFx.nextLightningAt = now + randomRange(18000, 42000);
     }
 
     function updateVideoEffects(now) {
@@ -534,7 +534,7 @@
                 }
                 video.currentTime = 0;
             });
-            videoFx.nextLightningAt = now + randomRange(18000, 34000);
+            videoFx.nextLightningAt = now + randomRange(15000, 28000);
             videoFx.lightningActiveUntil = 0;
             return;
         }

@@ -209,12 +209,12 @@ button {
     pointer-events: none;
     opacity: 0;
     mix-blend-mode: screen;
-    filter: contrast(1.2) brightness(1.12) saturate(0.88);
+    filter: contrast(1.24) brightness(1.18) saturate(0.92);
     transition: opacity 140ms ease-out;
 }
 
 .lightning-zone.is-active {
-    opacity: calc(var(--night) * 0.42);
+    opacity: calc(var(--night) * 0.50);
 }
 
 .lightning-zone-left {
